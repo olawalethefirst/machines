@@ -16,3 +16,5 @@ export const colors = {
   black: '16, 16, 16',
   red: '255, 0, 0',
 } as const;
+
+export const maxColWidth = 500;

@@ -33,4 +33,5 @@ export interface Machine {
   id: string;
   categoryId: string;
   attributes: MachineAttribute[];
+  name: string;
 }
