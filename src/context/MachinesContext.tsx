@@ -15,7 +15,7 @@ import {ValidateMachineAttributeName} from './actions/validateMachineAttributeNa
 import {ValidateMachineCategoryName} from './actions/validateMachineCategoryName';
 import useMachines from './useMachines';
 
-export interface MachinesContext {
+export interface MachineContextType {
   state: UseMachinesState;
   createMachine: CreateMachine;
   createMachineAttribute: CreateMachineAttribute;
@@ -31,7 +31,7 @@ export interface MachinesContext {
   validateMachineAttributeName: ValidateMachineAttributeName;
   validateMachineCategoryName: ValidateMachineCategoryName;
 }
-const MachineContext = createContext<MachinesContext | null>(null);
+const MachineContext = createContext<MachineContextType | null>(null);
 
 interface MachineProviderProps {
   children: React.ReactNode;

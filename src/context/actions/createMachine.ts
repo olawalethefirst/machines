@@ -6,6 +6,7 @@ export interface CreateMachineA extends ActionBase {
   type: typeof CREATE_MACHINE;
   payload: {
     categoryId: string;
+    categoryName: string;
     categoryAttributes: MachineCategoryAttribute[];
   };
 }
@@ -16,12 +17,17 @@ export type CreateMachine = (
 
 const createMachine =
   (dispatch: React.Dispatch<CreateMachineA>) =>
-  (categoryId: string, categoryAttributes: MachineCategoryAttribute[]) => {
+  (
+    categoryId: string,
+    categoryName: string,
+    categoryAttributes: MachineCategoryAttribute[],
+  ) => {
     dispatch({
       type: CREATE_MACHINE,
       payload: {
         categoryId,
         categoryAttributes,
+        categoryName,
       },
     });
   };

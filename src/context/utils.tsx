@@ -66,12 +66,14 @@ export const createMachineAttributeObj = (
 };
 
 export const createMachineObj = (
+  name: string,
   categoryId: string,
   parentMachineAttributes: MachineCategoryAttribute[],
 ): Machine => {
   return {
     id: getUniqueId(),
     categoryId,
+    name,
     attributes: parentMachineAttributes.map(createMachineAttributeObj),
   };
 };

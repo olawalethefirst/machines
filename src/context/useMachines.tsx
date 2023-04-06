@@ -29,7 +29,6 @@ import {
 export interface UseMachinesState {
   machineCategories: MachineCategory[];
   machines: Machine[];
-  // pickers: {}
 }
 
 const initialState: UseMachinesState = {
@@ -61,6 +60,14 @@ const reducer = (state: UseMachinesState, action: Action) => {
             return machineCategory;
           },
         );
+        draft.machines = draft.machines.map(machine => {
+          if (machine.categoryId === action.payload.machineCategoryId) {
+            return produce(machine, machineDraft => {
+              machineDraft.name = action.payload.name;
+            });
+          }
+          return machine;
+        });
       });
     case VALIDATE_MACHINE_CATEGORY_NAME:
       return produce(state, draft => {
@@ -327,6 +334,7 @@ const reducer = (state: UseMachinesState, action: Action) => {
       return produce(state, draft => {
         draft.machines.push(
           createMachineObj(
+            action.payload.categoryName,
             action.payload.categoryId,
             action.payload.categoryAttributes,
           ),
