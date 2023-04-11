@@ -7,6 +7,7 @@ export interface MachineCategory {
   lastUniqueName: string;
   titleAttributeId: string;
   attributes: MachineCategoryAttribute[];
+  error: string;
 }
 
 export type AttributeValueOptions = (typeof attributeValueOptions)[number];

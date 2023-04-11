@@ -17,4 +17,11 @@ export const colors = {
   red: '255, 0, 0',
 } as const;
 
+export const errors = {
+  minAttributeCount: 'minimum of 1 attribute required',
+  uniqueName: 'name must be unique',
+  minTextAttributeCount: 'minimum of 1 text attribute required',
+};
+
 export const maxColWidth = 500;
+export const minAttributesCount = 1;

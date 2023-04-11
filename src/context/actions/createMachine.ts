@@ -12,6 +12,7 @@ export interface CreateMachineA extends ActionBase {
 }
 export type CreateMachine = (
   categoryId: string,
+  categoryName: string,
   categoryAttributes: MachineCategoryAttribute[],
 ) => void;
 
