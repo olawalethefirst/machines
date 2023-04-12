@@ -1,8 +1,8 @@
 import {createContext} from 'react';
-import {State} from './useMachines';
+import {Context} from './useMachines';
 import useMachines from './useMachines';
 
-const MachineContext = createContext<State | null>(null);
+const MachineContext = createContext<Context | null>(null);
 
 interface MachineProviderProps {
   children: React.ReactNode;

@@ -3,7 +3,6 @@ import {
   MachineCategoryAttribute,
   Machine,
   MachineAttribute,
-  AtrributeValue,
   AttributeValueOptions,
 } from '../types';
 import getUniqueId from '../utils/getUniqueId';
@@ -22,34 +21,58 @@ export const createMachineCategoryAttributeObj = (
   };
 };
 
-export const createMachineCategoryObj = (): MachineCategory => {
+export const createMachineCategoryObj = (): [MachineCategory, string] => {
   const attribute = createMachineCategoryAttributeObj(attributeValueOptions[0]);
-
-  return {
-    id: getUniqueId(),
-    name: '',
-    nameUnique: true,
-    lastUniqueName: '',
-    titleAttributeId: attribute.id,
-    attributes: [attribute],
-    error: '',
-  };
+  const id = getUniqueId();
+  return [
+    {
+      id,
+      name: '',
+      nameUnique: true,
+      lastUniqueName: '',
+      titleAttributeId: attribute.id,
+      attributes: [attribute],
+      error: '',
+    },
+    id,
+  ];
 };
 
-export const getDefaultAttributeValue = (
-  valueOption: AttributeValueOptions,
-): AtrributeValue => {
+export const getDefaultAttributeValue = <T,>(
+  valueOption: T,
+): T extends 'text'
+  ? string
+  : T extends 'number'
+  ? string
+  : T extends 'checkbox'
+  ? boolean
+  : T extends 'date'
+  ? number
+  : null => {
   switch (valueOption) {
     case 'text':
-      return '';
+      return '' as any;
     case 'number':
-      return null;
+      return '' as any;
     case 'checkbox':
-      return false;
+      return false as any;
     case 'date':
-      return 0;
+      return 0 as any;
     default:
-      return '';
+      return '' as any;
+  }
+};
+
+const getAttrValueWithOption = (valueOption: AttributeValueOptions) => {
+  switch (valueOption) {
+    case 'date':
+      return {valueOption, value: getDefaultAttributeValue(valueOption)};
+    case 'number':
+      return {valueOption, value: getDefaultAttributeValue(valueOption)};
+    case 'checkbox':
+      return {valueOption, value: getDefaultAttributeValue(valueOption)};
+    default:
+      return {valueOption, value: getDefaultAttributeValue(valueOption)};
   }
 };
 
@@ -57,25 +80,23 @@ export const createMachineAttributeObj = (
   parentAttribute: MachineCategoryAttribute,
 ): MachineAttribute => {
   const {id: categoryAttributeId, name, valueOption} = parentAttribute;
+  const valueWithOption = getAttrValueWithOption(valueOption);
 
   return {
     id: getUniqueId(),
     categoryAttributeId,
     name,
-    value: getDefaultAttributeValue(valueOption),
-    valueOption,
+    ...valueWithOption,
   };
 };
 
 export const createMachineObj = (
-  name: string,
   categoryId: string,
   parentMachineAttributes: MachineCategoryAttribute[],
 ): Machine => {
   return {
     id: getUniqueId(),
     categoryId,
-    name,
     attributes: parentMachineAttributes.map(createMachineAttributeObj),
   };
 };

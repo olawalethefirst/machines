@@ -46,7 +46,9 @@ import {ClearCategoryError} from './actions/clearCategoryError';
 
 export interface MachinesState {
   machineCategories: MachineCategory[];
-  machines: Machine[];
+  machines: {
+    [key: string]: Machine[];
+  };
 }
 export interface Methods {
   createMachine: CreateMachine;
@@ -64,76 +66,66 @@ export interface Methods {
   validateMachineCategoryName: ValidateMachineCategoryName;
   clearCategoryError: ClearCategoryError;
 }
-export interface State extends Methods {
+export interface Context extends Methods {
   state: MachinesState;
 }
 
 const initialState: MachinesState = {
   machineCategories: [],
-  machines: [],
+  machines: {},
 };
 
 const reducer = (state: MachinesState, action: Action) => {
   switch (action.type) {
-    case CREATE_MACHINE_CATEGORY:
+    case CREATE_MACHINE_CATEGORY: {
+      const [category, id] = createMachineCategoryObj();
       return produce(state, draft => {
-        draft.machineCategories.push(createMachineCategoryObj());
+        draft.machineCategories.unshift(category);
+        draft.machines[id] = [];
       });
+    }
     case DELETE_MACHINE_CATEGORY:
       return produce(state, draft => {
         draft.machineCategories = draft.machineCategories.filter(
           machineCategory =>
             machineCategory.id !== action.payload.machineCategoryId,
         );
+        delete draft.machines[action.payload.machineCategoryId];
       });
     case UPDATE_MACHINE_CATEGORY_NAME:
       return produce(state, draft => {
-        draft.machineCategories = draft.machineCategories.map(
-          machineCategory => {
-            if (machineCategory.id === action.payload.machineCategoryId) {
-              machineCategory.name = action.payload.name;
-              machineCategory.nameUnique = true;
-            }
-            return machineCategory;
-          },
-        );
-
-        draft.machines = draft.machines.map(machine => {
-          if (machine.categoryId === action.payload.machineCategoryId) {
-            machine.name = action.payload.name;
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.machineCategoryId) {
+            machineCategory.name = action.payload.name;
+            machineCategory.nameUnique = true;
           }
-          return machine;
         });
       });
     case VALIDATE_MACHINE_CATEGORY_NAME:
       return produce(state, draft => {
-        draft.machineCategories = draft.machineCategories.map(
-          machineCategory => {
-            if (machineCategory.id === action.payload.machineCategoryId) {
-              const nameUnique = isNameUnique(
-                machineCategory.name,
-                draft.machineCategories.map(({name}) => name),
-              );
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.machineCategoryId) {
+            const nameUnique = isNameUnique(
+              machineCategory.name,
+              draft.machineCategories.map(({name}) => name),
+            );
 
-              if (nameUnique) {
-                machineCategory.nameUnique = true;
-                machineCategory.lastUniqueName = machineCategory.name;
-              } else {
-                machineCategory.nameUnique = false;
-                machineCategory.name = machineCategory.lastUniqueName;
-              }
+            if (nameUnique) {
+              machineCategory.nameUnique = true;
+              machineCategory.lastUniqueName = machineCategory.name;
+            } else {
+              machineCategory.nameUnique = false;
+              machineCategory.name = machineCategory.lastUniqueName;
             }
-            return machineCategory;
-          },
-        );
+          }
+        });
       });
     case CLEAR_CATEGORY_ERROR:
       return produce(state, draft => {
-        draft.machineCategories.map(category => {
+        draft.machineCategories.forEach(category => {
           if (category.id === action.payload.categoryId) {
             category.error = '';
           }
-          return category;
         });
       });
     case CREATE_MACHINE_ATTRIBUTE:
@@ -142,161 +134,113 @@ const reducer = (state: MachinesState, action: Action) => {
           action.payload.valueOption,
         );
 
-        draft.machineCategories = draft.machineCategories.map(
-          machineCategory => {
-            if (machineCategory.id === action.payload.machineCategoryId) {
-              machineCategory.attributes.push(newAttribute);
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.machineCategoryId) {
+            machineCategory.attributes.push(newAttribute);
 
-              if (machineCategory.titleAttributeId.length === 0) {
-                machineCategory.titleAttributeId = newAttribute.id;
-              }
+            if (machineCategory.titleAttributeId.length === 0) {
+              machineCategory.titleAttributeId = newAttribute.id;
             }
-            return machineCategory;
-          },
-        );
-
-        draft.machines = draft.machines.map(machine => {
-          if (machine.categoryId === action.payload.machineCategoryId) {
-            machine.attributes.push(createMachineAttributeObj(newAttribute));
           }
-          return machine;
+        });
+
+        draft.machines[action.payload.machineCategoryId].forEach(machine => {
+          machine.attributes.push(createMachineAttributeObj(newAttribute));
         });
       });
     case DELETE_MACHINE_ATTRIBUTE:
       return produce(state, draft => {
-        draft.machineCategories = draft.machineCategories.map(
-          machineCategory => {
-            if (machineCategory.id === action.payload.categoryId) {
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.categoryId) {
+            if (
+              shouldDeleteCategoryAttribute(
+                machineCategory.attributes,
+                action.payload.categoryAttributeId,
+              )
+            ) {
+              machineCategory.attributes = machineCategory.attributes.filter(
+                categoryAttr =>
+                  categoryAttr.id !== action.payload.categoryAttributeId,
+              );
+
               if (
-                shouldDeleteCategoryAttribute(
-                  machineCategory.attributes,
-                  action.payload.categoryAttributeId,
-                )
+                machineCategory.titleAttributeId ===
+                action.payload.categoryAttributeId
               ) {
-                machineCategory.attributes = machineCategory.attributes.filter(
-                  categoryAttr =>
-                    categoryAttr.id !== action.payload.categoryAttributeId,
+                const textAttributes = machineCategory.attributes.filter(
+                  attribute => attribute.valueOption === 'text',
                 );
 
-                if (
-                  machineCategory.titleAttributeId ===
-                  action.payload.categoryAttributeId
-                ) {
-                  const textAttributes = machineCategory.attributes.filter(
-                    attribute => attribute.valueOption === 'text',
-                  );
-
-                  machineCategory.titleAttributeId =
-                    machineCategory.attributes.length > 0
-                      ? textAttributes[0].id
-                      : '';
-                }
-
-                // update child machines attributes
-                draft.machines = draft.machines.map(machine => {
-                  if (machine.categoryId === action.payload.categoryId) {
-                    machine.attributes = machine.attributes.filter(
-                      machineAttr =>
-                        machineAttr.categoryAttributeId !==
-                        action.payload.categoryAttributeId,
-                    );
-                  }
-                  return machine;
-                });
-              } else {
-                machineCategory.error = errors.minAttributeCount;
+                machineCategory.titleAttributeId =
+                  machineCategory.attributes.length > 0
+                    ? textAttributes[0].id
+                    : '';
               }
+
+              // update child machines attributes
+              draft.machines[action.payload.categoryId].forEach(machine => {
+                machine.attributes = machine.attributes.filter(
+                  machineAttr =>
+                    machineAttr.categoryAttributeId !==
+                    action.payload.categoryAttributeId,
+                );
+              });
+            } else {
+              machineCategory.error = errors.minAttributeCount;
             }
-            return machineCategory;
-          },
-        );
+          }
+        });
       });
     case UPDATE_MACHINE_ATTRIBUTE_NAME:
       return produce(state, draft => {
-        draft.machineCategories = draft.machineCategories.map(
-          machineCategory => {
-            if (machineCategory.id === action.payload.categoryId) {
-              machineCategory.attributes = machineCategory.attributes.map(
-                categotyAttr => {
-                  if (categotyAttr.id === action.payload.categoryAttributeId) {
-                    categotyAttr.name = action.payload.newAttrName;
-                    categotyAttr.nameUnique = true;
-                  }
-                  return categotyAttr;
-                },
-              );
-            }
-            return machineCategory;
-          },
-        );
-
-        draft.machines = draft.machines.map(machine => {
-          if (machine.categoryId === action.payload.categoryId) {
-            machine.attributes = machine.attributes.map(machineAttr => {
-              if (
-                machineAttr.categoryAttributeId ===
-                action.payload.categoryAttributeId
-              ) {
-                machineAttr.name = action.payload.newAttrName;
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.categoryId) {
+            machineCategory.attributes.forEach(categotyAttr => {
+              if (categotyAttr.id === action.payload.categoryAttributeId) {
+                categotyAttr.name = action.payload.newAttrName;
+                categotyAttr.nameUnique = true;
               }
-              return machineAttr;
             });
           }
-          return machine;
+        });
+
+        draft.machines[action.payload.categoryId].forEach(machine => {
+          machine.attributes.forEach(machineAttr => {
+            if (
+              machineAttr.categoryAttributeId ===
+              action.payload.categoryAttributeId
+            ) {
+              machineAttr.name = action.payload.newAttrName;
+            }
+          });
         });
       });
     case VALIDATE_MACHINE_ATTRIBUTE_NAME:
       return produce(state, draft => {
-        draft.machineCategories = draft.machineCategories.map(
-          machineCategory => {
-            if (machineCategory.id === action.payload.categoryId) {
-              machineCategory.attributes = machineCategory.attributes.map(
-                categoryAttr => {
-                  if (categoryAttr.id === action.payload.categoryAttributeId) {
-                    const nameUnique = isNameUnique(
-                      categoryAttr.name,
-                      machineCategory.attributes.map(({name}) => name),
-                    );
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.categoryId) {
+            machineCategory.attributes.forEach(categoryAttr => {
+              if (categoryAttr.id === action.payload.categoryAttributeId) {
+                const nameUnique = isNameUnique(
+                  categoryAttr.name,
+                  machineCategory.attributes.map(({name}) => name),
+                );
 
-                    // update mactched machines
-                    draft.machines = draft.machines.map(machine => {
-                      if (machine.categoryId === action.payload.categoryId) {
-                        machine.attributes = machine.attributes.map(
-                          machineAttr => {
-                            if (
-                              machineAttr.categoryAttributeId ===
-                              action.payload.categoryAttributeId
-                            ) {
-                              if (!nameUnique) {
-                                machineAttr.name = categoryAttr.lastUniqueName;
-                              }
-                            }
-                            return machineAttr;
-                          },
-                        );
-                      }
-                      return machine;
-                    });
-
-                    if (nameUnique) {
-                      categoryAttr.nameUnique = true;
-                      categoryAttr.lastUniqueName = categoryAttr.name;
-                    } else {
-                      categoryAttr.nameUnique = false;
-                      categoryAttr.name = categoryAttr.lastUniqueName;
-                    }
-                  }
-                  return categoryAttr;
-                },
-              );
-            }
-            return machineCategory;
-          },
-        );
+                if (nameUnique) {
+                  categoryAttr.nameUnique = true;
+                  categoryAttr.lastUniqueName = categoryAttr.name;
+                } else {
+                  categoryAttr.nameUnique = false;
+                  categoryAttr.name = categoryAttr.lastUniqueName;
+                }
+              }
+            });
+          }
+        });
       });
     case UPDATE_MACHINE_ATTRIBUTE_VALUE_OPTION:
       return produce(state, draft => {
-        draft.machineCategories.map(machineCategory => {
+        draft.machineCategories.forEach(machineCategory => {
           if (machineCategory.id === action.payload.categoryId) {
             if (
               shouldChangeAttributeOption(
@@ -305,11 +249,10 @@ const reducer = (state: MachinesState, action: Action) => {
                 action.payload.valueOption,
               )
             ) {
-              machineCategory.attributes.map(categoryAttr => {
+              machineCategory.attributes.forEach(categoryAttr => {
                 if (categoryAttr.id === action.payload.categoryAttributeId) {
                   categoryAttr.valueOption = action.payload.valueOption;
                 }
-                return categoryAttr;
               });
 
               if (
@@ -324,44 +267,36 @@ const reducer = (state: MachinesState, action: Action) => {
                 machineCategory.titleAttributeId = textAttributes[0].id;
               }
 
-              draft.machines.map(machine => {
-                if (machine.categoryId === action.payload.categoryId) {
-                  machine.attributes.map(machineAttr => {
-                    if (
-                      machineAttr.categoryAttributeId ===
-                      action.payload.categoryAttributeId
-                    ) {
-                      machineAttr.value = getDefaultAttributeValue(
-                        action.payload.valueOption,
-                      );
-                    }
-                    return machineAttr;
-                  });
-                }
-                return machine;
+              draft.machines[action.payload.categoryId].forEach(machine => {
+                machine.attributes.forEach(machineAttr => {
+                  if (
+                    machineAttr.categoryAttributeId ===
+                    action.payload.categoryAttributeId
+                  ) {
+                    machineAttr.value = getDefaultAttributeValue(
+                      action.payload.valueOption,
+                    );
+                  }
+                });
               });
             } else {
               machineCategory.error = errors.minTextAttributeCount;
             }
           }
-          return machineCategory;
         });
       });
     case UPDATE_MACHINE_TITLE_ATTRIBUTE:
       return produce(state, draft => {
-        draft.machineCategories.map(machineCategory => {
+        draft.machineCategories.forEach(machineCategory => {
           if (machineCategory.id === action.payload.categoryId) {
             machineCategory.titleAttributeId = action.payload.titleAttributeId;
           }
-
-          return machineCategory;
         });
       });
     case CREATE_MACHINE:
       return produce(state, draft => {
-        draft.machines.push(
+        draft.machines[action.payload.categoryId].unshift(
           createMachineObj(
-            action.payload.categoryName,
             action.payload.categoryId,
             action.payload.categoryAttributes,
           ),
@@ -369,24 +304,20 @@ const reducer = (state: MachinesState, action: Action) => {
       });
     case DELETE_MACHINE:
       return produce(state, draft => {
-        draft.machines = draft.machines.filter(
-          machine => machine.id !== action.payload.machineId,
-        );
+        draft.machines[action.payload.categoryId] = draft.machines[
+          action.payload.categoryId
+        ].filter(machine => machine.id !== action.payload.machineId);
       });
     case UPDATE_MACHINE_ATTRIBUTE_VALUE:
       return produce(state, draft => {
-        draft.machines = draft.machines.map(machine => {
+        draft.machines[action.payload.categoryId].forEach(machine => {
           if (machine.id === action.payload.machineId) {
-            machine.attributes.map(machineAttr => {
+            machine.attributes.forEach(machineAttr => {
               if (machineAttr.id === action.payload.machineAttributeId) {
                 machineAttr.value = action.payload.value;
               }
-
-              return machineAttr;
             });
           }
-
-          return machine;
         });
       });
     default:
@@ -394,7 +325,7 @@ const reducer = (state: MachinesState, action: Action) => {
   }
 };
 
-function useMachines(): State {
+function useMachines(): Context {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   interface MethodsWithIndexing extends Methods {

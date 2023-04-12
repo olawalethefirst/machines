@@ -12,7 +12,7 @@ export interface MachineCategory {
 
 export type AttributeValueOptions = (typeof attributeValueOptions)[number];
 
-export type AtrributeValue = string | number | boolean | null;
+export type AttributeValue = string | number | boolean | null;
 
 export interface MachineCategoryAttribute {
   id: string;
@@ -22,17 +22,33 @@ export interface MachineCategoryAttribute {
   valueOption: AttributeValueOptions;
 }
 
-export interface MachineAttribute {
+interface MachineAttributeBase {
   id: string;
   categoryAttributeId: string;
   name: string;
-  value: AtrributeValue;
-  valueOption: AttributeValueOptions;
 }
+export interface TextAttribute {
+  value: string;
+  valueOption: (typeof attributeValueOptions)[0];
+}
+export interface NumberAttribute {
+  value: string;
+  valueOption: (typeof attributeValueOptions)[1];
+}
+export interface CheckboxAttribute {
+  value: boolean;
+  valueOption: (typeof attributeValueOptions)[2];
+}
+export interface DateAttribute {
+  value: number;
+  valueOption: (typeof attributeValueOptions)[3];
+}
+
+export type MachineAttribute = MachineAttributeBase &
+  (TextAttribute | NumberAttribute | CheckboxAttribute | DateAttribute);
 
 export interface Machine {
   id: string;
   categoryId: string;
   attributes: MachineAttribute[];
-  name: string;
 }
