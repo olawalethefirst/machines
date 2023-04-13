@@ -1,4 +1,4 @@
-import {useReducer} from 'react';
+import {useMemo, useReducer} from 'react';
 import {MachineCategory, Machine} from '../types';
 import {
   CREATE_MACHINE_CATEGORY,
@@ -325,24 +325,24 @@ const reducer = (state: MachinesState, action: Action) => {
   }
 };
 
+interface MethodsWithIndexing extends Methods {
+  [key: keyof typeof actions]: Actions;
+}
+let methods: Partial<MethodsWithIndexing> = {};
 function useMachines(): Context {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  interface MethodsWithIndexing extends Methods {
-    [key: keyof typeof actions]: Actions;
-  }
-
-  let methods: Partial<MethodsWithIndexing> = {};
-
-  for (let key in actions) {
-    if (actions.hasOwnProperty(key)) {
-      (methods as MethodsWithIndexing)[key] = actions[key](dispatch);
+  useMemo(() => {
+    for (let key in actions) {
+      if (actions.hasOwnProperty(key)) {
+        (methods as MethodsWithIndexing)[key] = actions[key](dispatch);
+      }
     }
-  }
+  }, []);
 
   return {
     state,
-    ...(methods as MethodsWithIndexing),
+    ...(methods as Methods),
   };
 }
 

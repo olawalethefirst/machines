@@ -12,7 +12,7 @@ export interface MachineCategory {
 
 export type AttributeValueOptions = (typeof attributeValueOptions)[number];
 
-export type AttributeValue = string | number | boolean | null;
+export type AttributeValue = string | number | boolean;
 
 export interface MachineCategoryAttribute {
   id: string;
