@@ -18,11 +18,13 @@ interface Props {
 }
 
 export const extractKey = (item: any, i: number) => {
-  const keyBase = `item-${i}`;
+  const keyBase = 'item-';
   let itemId = '';
 
   if (item.id) {
     itemId = item.id;
+  } else {
+    itemId = i.toString();
   }
 
   return keyBase + itemId;
