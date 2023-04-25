@@ -7,7 +7,7 @@ import ModalDropdown from 'react-native-modal-dropdown';
 import AttributeOptions from './AttributeOptions';
 
 interface Props {
-  onChangeValueType: (ind: string, val: string) => void;
+  onChangeValueType: (ind: string, val: AttributeValueOptions) => void;
   valueType: AttributeValueOptions;
 }
 
