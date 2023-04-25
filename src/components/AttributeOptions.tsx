@@ -7,7 +7,7 @@ import Dropdown from './Dropdown';
 
 interface AttributeOptionsProps extends PropsWithChildren {
   containerStyle?: StyleProp<ViewStyle>;
-  onSelectOption: (ind: string, val: string) => void;
+  onSelectOption: (ind: string, val: any) => void;
   defaultOption?: AttributeValueOptions;
   ref: Ref<ModalDropdown<'number' | 'text' | 'checkbox' | 'date'>>;
 }
