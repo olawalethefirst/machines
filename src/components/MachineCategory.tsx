@@ -15,7 +15,7 @@ import {
   AttributeValueOptions,
   MachineCategoryAttribute,
 } from '../types';
-import {FC, useCallback, useEffect, useMemo} from 'react';
+import {FC, useCallback, useEffect, useMemo, memo} from 'react';
 import {Text, View} from 'react-native';
 import {UpdateAttributeName} from '../context/actions/updateAttributeName';
 import {UpdateAttributeValueOption} from '../context/actions/updateAttributeValueOption';
@@ -263,4 +263,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MachineCategory;
+export default memo(MachineCategory);
