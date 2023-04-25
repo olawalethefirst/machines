@@ -10,7 +10,7 @@ import {
   MachineAttribute as MachineAttributeType,
   AttributeValue,
 } from '../types';
-import {FC, useCallback, useMemo} from 'react';
+import {FC, useCallback, useMemo, memo} from 'react';
 import {Text, View} from 'react-native';
 import MachineAttribute from './MachineAttribute';
 import {UpdateAttributeValue} from '../context/actions/updateAttributeValue';
@@ -51,6 +51,8 @@ const Machine: FC<Props> = function ({
   const onDeleteMachine = useCallback(() => {
     deleteMachine(machine.id, categoryId);
   }, [deleteMachine, machine.id, categoryId]);
+
+  console.log('updating item: ', machine.id);
 
   return (
     <ColCard>
@@ -103,4 +105,4 @@ const styles = StyleSheet.create({
   alignItemsCenter: {alignItems: 'center'},
 });
 
-export default Machine;
+export default memo(Machine);
