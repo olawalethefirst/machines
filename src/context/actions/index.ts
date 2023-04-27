@@ -36,14 +36,6 @@ import updateMachineTitleAttribute, {
   UpdateMachineTitleAttributeA,
   UpdateMachineTitleAttribute,
 } from './updateMachineTitleAttribute';
-import validateMachineAttributeName, {
-  ValidateMachineAttributeNameA,
-  ValidateMachineAttributeName,
-} from './validateMachineAttributeName';
-import validateMachineCategoryName, {
-  ValidateMachineCategoryNameA,
-  ValidateMachineCategoryName,
-} from './validateMachineCategoryName';
 import clearCategoryError, {
   ClearCategoryError,
   ClearCategoryErrorA,
@@ -60,8 +52,6 @@ export type Action =
   | UpdateAttributeNameA
   | UpdateMachineCategoryNameA
   | UpdateMachineTitleAttributeA
-  | ValidateMachineAttributeNameA
-  | ValidateMachineCategoryNameA
   | CreateMachineA
   | ClearCategoryErrorA;
 
@@ -76,8 +66,6 @@ export type Actions =
   | UpdateAttributeName
   | UpdateMachineCategoryName
   | UpdateMachineTitleAttribute
-  | ValidateMachineAttributeName
-  | ValidateMachineCategoryName
   | CreateMachine
   | ClearCategoryError;
 
@@ -93,8 +81,6 @@ const actions = {
   updateAttributeName,
   updateMachineCategoryName,
   updateMachineTitleAttribute,
-  validateMachineAttributeName,
-  validateMachineCategoryName,
   clearCategoryError,
 };
 

@@ -16,7 +16,6 @@ export const createMachineCategoryAttributeObj = (
     id: getUniqueId(),
     name: '',
     nameUnique: true,
-    lastUniqueName: '',
     valueOption,
   };
 };
@@ -29,7 +28,6 @@ export const createMachineCategoryObj = (): [MachineCategory, string] => {
       id,
       name: '',
       nameUnique: true,
-      lastUniqueName: '',
       titleAttributeId: attribute.id,
       attributes: [attribute],
       error: '',
@@ -40,15 +38,13 @@ export const createMachineCategoryObj = (): [MachineCategory, string] => {
 
 export const getDefaultAttributeValue = <T,>(
   valueOption: T,
-): T extends 'text'
-  ? string
-  : T extends 'number'
+): T extends 'number'
   ? string
   : T extends 'checkbox'
   ? boolean
   : T extends 'date'
   ? number
-  : null => {
+  : string => {
   switch (valueOption) {
     case 'text':
       return '' as any;
@@ -79,13 +75,12 @@ const getAttrValueWithOption = (valueOption: AttributeValueOptions) => {
 export const createMachineAttributeObj = (
   parentAttribute: MachineCategoryAttribute,
 ): MachineAttribute => {
-  const {id: categoryAttributeId, name, valueOption} = parentAttribute;
+  const {id: categoryAttributeId, valueOption} = parentAttribute;
   const valueWithOption = getAttrValueWithOption(valueOption);
 
   return {
     id: getUniqueId(),
     categoryAttributeId,
-    name,
     ...valueWithOption,
   };
 };
@@ -102,7 +97,6 @@ export const createMachineObj = (
 };
 
 export const isNameUnique = (name: string, names: string[]) => {
-  let count = 0;
   let i = 0;
 
   const sanitizedName = sanitizeString(name);
@@ -113,14 +107,15 @@ export const isNameUnique = (name: string, names: string[]) => {
 
   const sanitizedNames = names.map(_name => sanitizeString(_name));
 
-  while (i < sanitizedNames.length && count < 2) {
+  while (i < sanitizedNames.length) {
     if (sanitizedNames[i] === sanitizedName) {
-      count++;
+      return false;
     }
+
     i++;
   }
 
-  return count < 2;
+  return true;
 };
 
 export const shouldDeleteCategoryAttribute = (

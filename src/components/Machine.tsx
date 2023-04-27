@@ -9,6 +9,8 @@ import {
   Machine as MachineType,
   MachineAttribute as MachineAttributeType,
   AttributeValue,
+  MachineCategory,
+  MachineCategoryAttribute,
 } from '../types';
 import {FC, useCallback, useMemo, memo} from 'react';
 import {Text, View} from 'react-native';
@@ -20,27 +22,28 @@ import {DeleteMachine as DeleteMachineType} from '../context/actions/deleteMachi
 interface Props {
   machine: MachineType;
   categoryId: string;
-  titleAttributeId: string;
   updateAttributeValue: UpdateAttributeValue;
   deleteMachine: DeleteMachineType;
+  category: MachineCategory;
 }
 
 const Machine: FC<Props> = function ({
   machine,
   categoryId,
-  titleAttributeId,
   updateAttributeValue,
   deleteMachine,
+  category,
 }) {
   const title = useMemo(() => {
     return sanitizeString(
       (
         machine.attributes.find(
-          attribute => attribute.categoryAttributeId === titleAttributeId,
+          attribute =>
+            attribute.categoryAttributeId === category.titleAttributeId,
         ) as MachineAttributeType
       ).value as string,
     );
-  }, [machine.attributes, titleAttributeId]);
+  }, [machine.attributes, category.titleAttributeId]);
 
   const onUpdateAttributeValue = useCallback(
     (attributeId: string, value: AttributeValue) => {
@@ -74,6 +77,14 @@ const Machine: FC<Props> = function ({
                 updateValue={(value: AttributeValue) => {
                   onUpdateAttributeValue(attribute.id, value);
                 }}
+                attributeName={
+                  (
+                    category.attributes.find(
+                      categoryAttribute =>
+                        categoryAttribute.id === attribute.categoryAttributeId,
+                    ) as MachineCategoryAttribute
+                  ).name
+                }
               />
             </Row>
           </View>

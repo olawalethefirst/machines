@@ -35,17 +35,12 @@ const MachineGroup = function () {
       <Machine
         machine={item}
         categoryId={categoryId}
-        titleAttributeId={category.titleAttributeId}
         updateAttributeValue={updateAttributeValue}
         deleteMachine={deleteMachine}
+        category={category}
       />
     ),
-    [
-      categoryId,
-      category.titleAttributeId,
-      updateAttributeValue,
-      deleteMachine,
-    ],
+    [categoryId, updateAttributeValue, deleteMachine, category],
   );
 
   return (

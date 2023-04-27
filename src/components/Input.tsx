@@ -1,27 +1,50 @@
-import {FC, PropsWithChildren, useState, useMemo, useCallback} from 'react';
+import {
+  FC,
+  PropsWithChildren,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import {StyleProp, StyleSheet, TextInput, ViewStyle} from 'react-native';
 import color from '../utils/color';
 
 interface InputProps extends PropsWithChildren {
   style?: StyleProp<ViewStyle>;
   label: string;
-  value: string;
+  initialValue: string;
   inputError?: string;
-  onChangeText: (text: string) => void;
-  onFocusInput?: (...args: any[]) => void;
-  onBlurInput?: (...args: any[]) => void;
+  onFocusInput?: () => void;
+  onBlurInput?: (text: string) => void;
+  resetValueKey?: string;
 }
 
 const Input: FC<InputProps> = function ({
   label,
   style,
-  value,
-  onChangeText,
+  initialValue,
   inputError,
   onFocusInput,
   onBlurInput,
+  resetValueKey,
 }) {
+  const [value, setValue] = useState(initialValue);
   const [focussed, setFocussed] = useState(false);
+
+  const initialValueRef = useRef(initialValue);
+  const valueRef = useRef(initialValue);
+
+  initialValueRef.current = initialValue;
+  valueRef.current = value;
+
+  useEffect(() => {
+    resetValueKey && console.log('resetting input value');
+
+    resetValueKey &&
+      valueRef.current !== initialValueRef.current &&
+      setValue(initialValueRef.current);
+  }, [resetValueKey]);
 
   const inputStyle = useMemo(
     () => [
@@ -36,25 +59,24 @@ const Input: FC<InputProps> = function ({
     [focussed, inputError, style],
   );
 
+  const updateValue = (text: string) => {
+    setValue(text);
+  };
   const onFocus = useCallback(() => {
-    if (onFocusInput) {
-      onFocusInput();
-    }
+    onFocusInput && onFocusInput();
     setFocussed(true);
   }, [onFocusInput]);
-  const onBlur = useCallback(() => {
-    if (onBlurInput) {
-      onBlurInput();
-    }
+  const onBlur = () => {
+    onBlurInput && onBlurInput(value);
     setFocussed(false);
-  }, [onBlurInput]);
+  };
 
   return (
     <TextInput
       style={inputStyle}
       placeholder={focussed ? '' : label}
       value={value}
-      onChangeText={onChangeText}
+      onChangeText={updateValue}
       onFocus={onFocus}
       onBlur={onBlur}
       placeholderTextColor={color('darkGrey')}

@@ -11,30 +11,35 @@ import getAttributeName from '../utils/getAttributeName';
 interface Props {
   attribute: MachineAttributeType;
   updateValue: (value: AttributeValue) => void;
+  attributeName: string;
 }
 
-const MachineAttribute: FC<Props> = function ({attribute, updateValue}) {
+const MachineAttribute: FC<Props> = function ({
+  attribute,
+  updateValue,
+  attributeName,
+}) {
   switch (attribute.valueOption) {
     case 'text':
       return (
         <LabelledInput
-          label={getAttributeName(attribute.name)}
-          value={attribute.value}
-          onChangeText={updateValue}
+          label={getAttributeName(attributeName)}
+          initialValue={attribute.value}
+          updateValueOnBlur={updateValue}
         />
       );
     case 'number':
       return (
         <LabelledInput
-          label={getAttributeName(attribute.name)}
-          value={attribute.value}
-          onChangeText={updateValue}
+          label={getAttributeName(attributeName)}
+          initialValue={attribute.value}
+          updateValueOnBlur={updateValue}
         />
       );
     case 'checkbox':
       return (
         <CheckboxAttribute
-          name={getAttributeName(attribute.name)}
+          name={getAttributeName(attributeName)}
           value={attribute.value}
           updateValue={updateValue}
         />
@@ -43,7 +48,7 @@ const MachineAttribute: FC<Props> = function ({attribute, updateValue}) {
       return (
         <DateAttribute
           date={attribute.value}
-          name={getAttributeName(attribute.name)}
+          name={getAttributeName(attributeName)}
           updateDate={updateValue}
         />
       );

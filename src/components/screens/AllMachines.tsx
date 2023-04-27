@@ -115,9 +115,9 @@ const AllMachines = function () {
         <Machine
           machine={item}
           categoryId={category.id}
-          titleAttributeId={category.titleAttributeId}
           updateAttributeValue={updateAttributeValue}
           deleteMachine={deleteMachine}
+          category={category}
         />
       );
     },

@@ -13,21 +13,23 @@ import Input from './Input';
 interface LabelledInputProps extends PropsWithChildren {
   inputStyle?: StyleProp<ViewStyle>;
   label: string;
-  value: string;
+  initialValue: string;
   inputError?: string;
-  onChangeText: (text: string) => void;
+  updateValueOnBlur: (text: string) => void;
   onFocus?: (...args: any[]) => void;
   onBlur?: (...args: any[]) => void;
+  resetValueKey?: string;
 }
 
 const LabelledInput: FC<LabelledInputProps> = function ({
   label,
-  value,
-  onChangeText,
+  initialValue,
+  updateValueOnBlur,
   inputStyle,
   inputError,
   onFocus,
   onBlur,
+  resetValueKey,
 }) {
   const [isFocussed, setIsFocussed] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
@@ -38,10 +40,14 @@ const LabelledInput: FC<LabelledInputProps> = function ({
     onFocus && onFocus();
     setIsFocussed(true);
   }, [onFocus]);
-  const onBlurInput = useCallback(() => {
-    onBlur && onBlur();
-    setIsFocussed(false);
-  }, [onBlur]);
+  const onBlurInput = useCallback(
+    (text: string) => {
+      updateValueOnBlur && updateValueOnBlur(text);
+      onBlur && onBlur();
+      setIsFocussed(false);
+    },
+    [onBlur, updateValueOnBlur],
+  );
 
   const hideBorderStyle = useMemo(
     () => ({
@@ -60,7 +66,7 @@ const LabelledInput: FC<LabelledInputProps> = function ({
 
   return (
     <View style={styles.container}>
-      {isFocussed || value ? (
+      {isFocussed || initialValue ? (
         <>
           <Text
             numberOfLines={1}
@@ -77,11 +83,11 @@ const LabelledInput: FC<LabelledInputProps> = function ({
       <Input
         style={inputStyle}
         label={label}
-        value={value}
+        initialValue={initialValue}
         inputError={inputError}
-        onChangeText={onChangeText}
         onFocusInput={onFocusInput}
         onBlurInput={onBlurInput}
+        resetValueKey={resetValueKey}
       />
     </View>
   );

@@ -15,7 +15,15 @@ import {
   AttributeValueOptions,
   MachineCategoryAttribute,
 } from '../types';
-import {FC, useCallback, useEffect, useMemo, memo} from 'react';
+import {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  memo,
+  useState,
+  useRef,
+} from 'react';
 import {Text, View} from 'react-native';
 import {UpdateAttributeName} from '../context/actions/updateAttributeName';
 import {UpdateAttributeValueOption} from '../context/actions/updateAttributeValueOption';
@@ -24,11 +32,10 @@ import {DeleteMachineCategory} from '../context/actions/deleteMachineCategory';
 import {DeleteMachineAttribute} from '../context/actions/deleteMachineAttribute';
 import {ClearCategoryError} from '../context/actions/clearCategoryError';
 import {errors} from '../constants';
-import {ValidateMachineAttributeName} from '../context/actions/validateMachineAttributeName';
-import {ValidateMachineCategoryName} from '../context/actions/validateMachineCategoryName';
 import {UpdateMachineCategoryName} from '../context/actions/updateMachineCategoryName';
 import {UpdateMachineTitleAttribute} from '../context/actions/updateMachineTitleAttribute';
 import getCategoryName from '../utils/getCategoryName';
+import getUniqueId from '../utils/getUniqueId';
 
 interface Props {
   item: MachineCategoryType;
@@ -38,11 +45,38 @@ interface Props {
   deleteMachineAttribute: DeleteMachineAttribute;
   updateAttributeValueOption: UpdateAttributeValueOption;
   clearCategoryError: ClearCategoryError;
-  validateMachineCategoryName: ValidateMachineCategoryName;
-  validateMachineAttributeName: ValidateMachineAttributeName;
   updateMachineCategoryName: UpdateMachineCategoryName;
   updateMachineTitleAttribute: UpdateMachineTitleAttribute;
 }
+
+const ValidatedLabelledInput: FC<{
+  label: string;
+  initialValue: string;
+  valueUnique: boolean;
+  updateValueOnBlur: (name: string) => void;
+}> = ({label, initialValue, valueUnique, updateValueOnBlur}) => {
+  const [resetValueKey, setResetValueKey] = useState(getUniqueId());
+
+  const initialRender = useRef(true);
+
+  useEffect(() => {
+    !initialRender.current && !valueUnique && setResetValueKey(getUniqueId());
+
+    if (initialRender.current) {
+      initialRender.current = false;
+    }
+  }, [valueUnique]);
+
+  return (
+    <LabelledInput
+      initialValue={initialValue}
+      updateValueOnBlur={updateValueOnBlur}
+      label={label}
+      inputError={valueUnique ? '' : errors.uniqueName}
+      resetValueKey={resetValueKey}
+    />
+  );
+};
 
 const getAttributeName = (attribute: MachineCategoryAttribute) =>
   attribute.name.length > 0
@@ -68,8 +102,6 @@ const MachineCategory: FC<Props> = function ({
   deleteMachineAttribute,
   deleteCategory,
   clearCategoryError,
-  validateMachineCategoryName,
-  validateMachineAttributeName,
   updateMachineCategoryName,
   updateMachineTitleAttribute,
 }) {
@@ -81,8 +113,9 @@ const MachineCategory: FC<Props> = function ({
     getAttributeName(attribute),
   );
 
-  const onUpdateName = useCallback(
+  const updateName = useCallback(
     (name: string) => {
+      console.log('reached with name:', name);
       updateMachineCategoryName(item.id, name);
     },
     [updateMachineCategoryName, item.id],
@@ -96,7 +129,7 @@ const MachineCategory: FC<Props> = function ({
     },
     [updateMachineTitleAttribute, item.id, titleOptionsData],
   );
-  const onUpdateAttributeName = useCallback(
+  const _updateAttributeName = useCallback(
     (attributeId: string, name: string) => {
       updateAttributeName(attributeId, item.id, name);
     },
@@ -123,15 +156,6 @@ const MachineCategory: FC<Props> = function ({
   const onDeleteCategory = useCallback(() => {
     deleteCategory(item.id);
   }, [deleteCategory, item.id]);
-  const onValidateMachineName = useCallback(() => {
-    validateMachineCategoryName(item.id);
-  }, [validateMachineCategoryName, item.id]);
-  const onValidateAttributeName = useCallback(
-    (attributeId: string) => {
-      validateMachineAttributeName(attributeId, item.id);
-    },
-    [validateMachineAttributeName, item.id],
-  );
 
   useEffect(() => {
     if (item.error.length > 0) {
@@ -164,14 +188,11 @@ const MachineCategory: FC<Props> = function ({
 
         <View>
           <Row>
-            <LabelledInput
-              value={item.name}
-              onChangeText={(text: string) => {
-                onUpdateName(text);
-              }}
+            <ValidatedLabelledInput
+              initialValue={item.name}
+              updateValueOnBlur={updateName}
               label={'Name'}
-              inputError={!item.nameUnique ? errors.uniqueName : ''}
-              onBlur={onValidateMachineName}
+              valueUnique={item.nameUnique}
             />
           </Row>
           {!item.nameUnique ? (
@@ -188,16 +209,13 @@ const MachineCategory: FC<Props> = function ({
             <Spacer value={12} />
 
             <Row style={[styles.multiItemRow, styles.alignItemsCenter]}>
-              <LabelledInput
-                value={attribute.name}
-                onChangeText={(text: string) => {
-                  onUpdateAttributeName(attribute.id, text);
+              <ValidatedLabelledInput
+                initialValue={attribute.name}
+                updateValueOnBlur={name => {
+                  _updateAttributeName(attribute.id, name);
                 }}
                 label={'Attribute'}
-                inputError={!attribute.nameUnique ? errors.uniqueName : ''}
-                onBlur={() => {
-                  onValidateAttributeName(attribute.id);
-                }}
+                valueUnique={attribute.nameUnique}
               />
               <SelectAttributeOption
                 valueType={attribute.valueOption}

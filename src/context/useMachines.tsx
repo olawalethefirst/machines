@@ -4,11 +4,11 @@ import {
   CREATE_MACHINE_CATEGORY,
   DELETE_MACHINE_CATEGORY,
   UPDATE_MACHINE_CATEGORY_NAME,
-  VALIDATE_MACHINE_CATEGORY_NAME,
+  // VALIDATE_MACHINE_CATEGORY_NAME,
   CREATE_MACHINE_ATTRIBUTE,
   DELETE_MACHINE_ATTRIBUTE,
   UPDATE_MACHINE_ATTRIBUTE_NAME,
-  VALIDATE_MACHINE_ATTRIBUTE_NAME,
+  // VALIDATE_MACHINE_ATTRIBUTE_NAME,
   UPDATE_MACHINE_ATTRIBUTE_VALUE_OPTION,
   UPDATE_MACHINE_TITLE_ATTRIBUTE,
   CREATE_MACHINE,
@@ -40,8 +40,6 @@ import {UpdateAttributeValueOption} from './actions/updateAttributeValueOption';
 import {UpdateAttributeName} from './actions/updateAttributeName';
 import {UpdateMachineCategoryName} from './actions/updateMachineCategoryName';
 import {UpdateMachineTitleAttribute} from './actions/updateMachineTitleAttribute';
-import {ValidateMachineAttributeName} from './actions/validateMachineAttributeName';
-import {ValidateMachineCategoryName} from './actions/validateMachineCategoryName';
 import {ClearCategoryError} from './actions/clearCategoryError';
 
 export interface MachinesState {
@@ -62,8 +60,6 @@ export interface Methods {
   updateAttributeName: UpdateAttributeName;
   updateMachineCategoryName: UpdateMachineCategoryName;
   updateMachineTitleAttribute: UpdateMachineTitleAttribute;
-  validateMachineAttributeName: ValidateMachineAttributeName;
-  validateMachineCategoryName: ValidateMachineCategoryName;
   clearCategoryError: ClearCategoryError;
 }
 export interface Context extends Methods {
@@ -96,26 +92,20 @@ const reducer = (state: MachinesState, action: Action) => {
       return produce(state, draft => {
         draft.machineCategories.forEach(machineCategory => {
           if (machineCategory.id === action.payload.machineCategoryId) {
-            machineCategory.name = action.payload.name;
-            machineCategory.nameUnique = true;
-          }
-        });
-      });
-    case VALIDATE_MACHINE_CATEGORY_NAME:
-      return produce(state, draft => {
-        draft.machineCategories.forEach(machineCategory => {
-          if (machineCategory.id === action.payload.machineCategoryId) {
             const nameUnique = isNameUnique(
-              machineCategory.name,
-              draft.machineCategories.map(({name}) => name),
+              action.payload.name,
+              draft.machineCategories
+                .filter(
+                  category => category.id !== action.payload.machineCategoryId,
+                )
+                .map(({name}) => name),
             );
 
             if (nameUnique) {
               machineCategory.nameUnique = true;
-              machineCategory.lastUniqueName = machineCategory.name;
+              machineCategory.name = action.payload.name;
             } else {
               machineCategory.nameUnique = false;
-              machineCategory.name = machineCategory.lastUniqueName;
             }
           }
         });
@@ -195,43 +185,22 @@ const reducer = (state: MachinesState, action: Action) => {
       return produce(state, draft => {
         draft.machineCategories.forEach(machineCategory => {
           if (machineCategory.id === action.payload.categoryId) {
-            machineCategory.attributes.forEach(categotyAttr => {
-              if (categotyAttr.id === action.payload.categoryAttributeId) {
-                categotyAttr.name = action.payload.newAttrName;
-                categotyAttr.nameUnique = true;
-              }
-            });
-          }
-        });
-
-        draft.machines[action.payload.categoryId].forEach(machine => {
-          machine.attributes.forEach(machineAttr => {
-            if (
-              machineAttr.categoryAttributeId ===
-              action.payload.categoryAttributeId
-            ) {
-              machineAttr.name = action.payload.newAttrName;
-            }
-          });
-        });
-      });
-    case VALIDATE_MACHINE_ATTRIBUTE_NAME:
-      return produce(state, draft => {
-        draft.machineCategories.forEach(machineCategory => {
-          if (machineCategory.id === action.payload.categoryId) {
             machineCategory.attributes.forEach(categoryAttr => {
               if (categoryAttr.id === action.payload.categoryAttributeId) {
                 const nameUnique = isNameUnique(
-                  categoryAttr.name,
-                  machineCategory.attributes.map(({name}) => name),
+                  action.payload.newAttrName,
+                  machineCategory.attributes
+                    .filter(
+                      attr => attr.id !== action.payload.categoryAttributeId,
+                    )
+                    .map(({name}) => name),
                 );
 
                 if (nameUnique) {
                   categoryAttr.nameUnique = true;
-                  categoryAttr.lastUniqueName = categoryAttr.name;
+                  categoryAttr.name = action.payload.newAttrName;
                 } else {
                   categoryAttr.nameUnique = false;
-                  categoryAttr.name = categoryAttr.lastUniqueName;
                 }
               }
             });

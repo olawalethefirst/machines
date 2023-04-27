@@ -4,7 +4,6 @@ export interface MachineCategory {
   id: string;
   name: string;
   nameUnique: boolean;
-  lastUniqueName: string;
   titleAttributeId: string;
   attributes: MachineCategoryAttribute[];
   error: string;
@@ -18,14 +17,12 @@ export interface MachineCategoryAttribute {
   id: string;
   name: string;
   nameUnique: boolean;
-  lastUniqueName: string;
   valueOption: AttributeValueOptions;
 }
 
 interface MachineAttributeBase {
   id: string;
   categoryAttributeId: string;
-  name: string;
 }
 export interface TextAttribute {
   value: string;
