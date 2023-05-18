@@ -54,7 +54,7 @@ const ValidatedLabelledInput: FC<{
   initialValue: string;
   valueUnique: boolean;
   updateValueOnBlur: (name: string) => void;
-}> = ({label, initialValue, valueUnique, updateValueOnBlur}) => {
+}> = memo(({label, initialValue, valueUnique, updateValueOnBlur}) => {
   const [resetValueKey, setResetValueKey] = useState(getUniqueId());
 
   const initialRender = useRef(true);
@@ -76,7 +76,7 @@ const ValidatedLabelledInput: FC<{
       resetValueKey={resetValueKey}
     />
   );
-};
+});
 
 const getAttributeName = (attribute: MachineCategoryAttribute) =>
   attribute.name.length > 0
@@ -109,13 +109,13 @@ const MachineCategory: FC<Props> = function ({
     () => item.attributes.filter(attribute => attribute.valueOption === 'text'),
     [item.attributes],
   );
+  const categoryName = useMemo(() => getCategoryName(item), [item]);
   const titleOptions = titleOptionsData.map(attribute =>
     getAttributeName(attribute),
   );
 
   const updateName = useCallback(
     (name: string) => {
-      console.log('reached with name:', name);
       updateMachineCategoryName(item.id, name);
     },
     [updateMachineCategoryName, item.id],
@@ -169,9 +169,7 @@ const MachineCategory: FC<Props> = function ({
     <ColCard>
       <Column style={styles.container}>
         <Row>
-          <Text numberOfLines={1} style={styles.title}>
-            {getCategoryName(item)}
-          </Text>
+          <Text style={styles.title}>{categoryName}</Text>
         </Row>
 
         <Row>

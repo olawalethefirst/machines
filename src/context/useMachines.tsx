@@ -76,7 +76,7 @@ const reducer = (state: MachinesState, action: Action) => {
     case CREATE_MACHINE_CATEGORY: {
       const [category, id] = createMachineCategoryObj();
       return produce(state, draft => {
-        draft.machineCategories.unshift(category);
+        draft.machineCategories.push(category);
         draft.machines[id] = [];
       });
     }
@@ -264,7 +264,7 @@ const reducer = (state: MachinesState, action: Action) => {
       });
     case CREATE_MACHINE:
       return produce(state, draft => {
-        draft.machines[action.payload.categoryId].unshift(
+        draft.machines[action.payload.categoryId].push(
           createMachineObj(
             action.payload.categoryId,
             action.payload.categoryAttributes,

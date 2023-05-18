@@ -1,7 +1,7 @@
 import Button from './Button';
 import {ViewStyle, StyleProp} from 'react-native/types';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {FC} from 'react';
+import {FC, memo} from 'react';
 import color from '../utils/color';
 import {DeleteMachineAttribute} from '../context/actions/deleteMachineAttribute';
 
@@ -21,4 +21,4 @@ const DeleteAttribute: FC<DeleteAttributeProps> = function ({
   );
 };
 
-export default DeleteAttribute;
+export default memo(DeleteAttribute);

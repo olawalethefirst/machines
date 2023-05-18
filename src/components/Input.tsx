@@ -39,8 +39,6 @@ const Input: FC<InputProps> = function ({
   valueRef.current = value;
 
   useEffect(() => {
-    resetValueKey && console.log('resetting input value');
-
     resetValueKey &&
       valueRef.current !== initialValueRef.current &&
       setValue(initialValueRef.current);

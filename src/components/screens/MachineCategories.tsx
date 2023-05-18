@@ -21,8 +21,6 @@ const MachineCategories = function () {
     deleteMachineAttribute,
     deleteMachineCategory,
     clearCategoryError,
-    validateMachineCategoryName,
-    validateMachineAttributeName,
     updateMachineTitleAttribute,
   } = context;
 
@@ -36,8 +34,6 @@ const MachineCategories = function () {
         clearCategoryError={clearCategoryError}
         deleteCategory={deleteMachineCategory}
         item={item}
-        validateMachineCategoryName={validateMachineCategoryName}
-        validateMachineAttributeName={validateMachineAttributeName}
         updateMachineCategoryName={updateMachineCategoryName}
         updateMachineTitleAttribute={updateMachineTitleAttribute}
       />
@@ -49,8 +45,6 @@ const MachineCategories = function () {
       deleteMachineAttribute,
       clearCategoryError,
       deleteMachineCategory,
-      validateMachineCategoryName,
-      validateMachineAttributeName,
       updateMachineCategoryName,
       updateMachineTitleAttribute,
     ],

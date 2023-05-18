@@ -1,6 +1,6 @@
 import {Text, StyleSheet} from 'react-native';
 import Button from './Button';
-import {FC, useRef} from 'react';
+import {FC, memo, useRef} from 'react';
 import color from '../utils/color';
 import ModalDropdown from 'react-native-modal-dropdown';
 import Dropdown from './Dropdown';
@@ -56,4 +56,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SelectTitle;
+export default memo(SelectTitle);

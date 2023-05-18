@@ -1,7 +1,7 @@
 import Button from './Button';
 import {Text, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {FC} from 'react';
+import {FC, memo} from 'react';
 import color from '../utils/color';
 
 interface DeleteMachineProps {
@@ -31,4 +31,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DeleteMachine;
+export default memo(DeleteMachine);

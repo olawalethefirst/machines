@@ -55,8 +55,6 @@ const Machine: FC<Props> = function ({
     deleteMachine(machine.id, categoryId);
   }, [deleteMachine, machine.id, categoryId]);
 
-  console.log('updating item: ', machine.id);
-
   return (
     <ColCard>
       <Column style={styles.container}>

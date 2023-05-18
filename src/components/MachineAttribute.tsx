@@ -2,7 +2,7 @@ import {
   MachineAttribute as MachineAttributeType,
   AttributeValue,
 } from '../types';
-import {FC} from 'react';
+import {FC, memo} from 'react';
 import LabelledInput from './LabelledInput';
 import CheckboxAttribute from './CheckboxAttribute';
 import DateAttribute from './DateAttribute';
@@ -57,4 +57,4 @@ const MachineAttribute: FC<Props> = function ({
   }
 };
 
-export default MachineAttribute;
+export default memo(MachineAttribute);

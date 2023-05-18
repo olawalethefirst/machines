@@ -95,7 +95,7 @@ const AllMachines = function () {
   const renderSectionHeader: FC<{section: {title: string}}> = useCallback(
     ({section: {title}}) => (
       <Column style={styles.sectionTitleContainer}>
-        <Text numberOfLines={1} style={styles.sectionTitle}>
+        <Text style={styles.sectionTitle}>
           {getCategoryName(
             machineCategories.find(
               category => category.id === title,
