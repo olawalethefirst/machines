@@ -1,22 +1,15 @@
-import {
-  StyleProp,
-  ViewStyle,
-  useWindowDimensions,
-  StyleSheet,
-} from 'react-native';
+import {StyleProp, ViewStyle, StyleSheet} from 'react-native';
 import {FC, PropsWithChildren} from 'react';
 import Column from './layout/Column';
-import {maxColWidth} from '../constants';
+import {maxCardSize} from '../constants';
 
 interface ColCardProps extends PropsWithChildren {
   style?: StyleProp<ViewStyle>;
 }
 
 const ColCard: FC<ColCardProps> = function ({children, style}) {
-  const {width} = useWindowDimensions();
-
   const colCardStyle = {
-    width: width > maxColWidth ? '50%' : '100%',
+    maxWidth: maxCardSize,
   };
 
   return (

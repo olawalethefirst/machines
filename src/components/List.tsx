@@ -1,11 +1,5 @@
-import {
-  FlatList,
-  StyleProp,
-  ViewStyle,
-  useWindowDimensions,
-} from 'react-native';
+import {FlatList, StyleProp, ViewStyle} from 'react-native';
 import {FC} from 'react';
-import {maxColWidth} from '../constants';
 
 interface Props {
   data: any[];
@@ -37,17 +31,11 @@ const List: FC<Props> = function ({
   ListFooter,
   ListEmptyComponent,
 }) {
-  const {width} = useWindowDimensions();
-
-  const numOfColumns = width > maxColWidth ? 2 : 1;
-
   return (
     <FlatList
-      key={numOfColumns}
       data={data}
       renderItem={renderItem}
       keyExtractor={keyExtractor ?? extractKey}
-      numColumns={numOfColumns}
       ListFooterComponent={ListFooter}
       ListEmptyComponent={ListEmptyComponent}
     />
