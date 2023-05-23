@@ -6007,6 +6007,11 @@
   dependencies:
     "prop-types" "^15.8.1"
 
+"react-native-flipper-performance-plugin@^0.4.0":
+  "integrity" "sha512-D9Z5VrktJjUenYB4X9qfKcqg9YSyQWOD7fKoxkzXoKxbyalGoWib79iD3OBHOBZEsk5RbQ006zYL7VQwA3D4Wg=="
+  "resolved" "https://registry.npmjs.org/react-native-flipper-performance-plugin/-/react-native-flipper-performance-plugin-0.4.0.tgz"
+  "version" "0.4.0"
+
 "react-native-gesture-handler@^2.9.0", "react-native-gesture-handler@>= 1.0.0":
   "integrity" "sha512-a0BcH3Qb1tgVqUutc6d3VuWQkI1AM3+fJx8dkxzZs9t06qA27QgURYFoklpabuWpsUTzuKRpxleykp25E8m7tg=="
   "resolved" "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.9.0.tgz"
