@@ -1,4 +1,4 @@
-import {FlatList, StyleProp, ViewStyle} from 'react-native';
+import {StyleProp, ViewStyle, FlatList} from 'react-native';
 import {FC} from 'react';
 
 interface Props {

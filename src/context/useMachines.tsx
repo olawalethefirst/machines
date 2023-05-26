@@ -1,14 +1,14 @@
-import {useMemo, useReducer} from 'react';
+import {useReducer, Dispatch} from 'react';
 import {MachineCategory, Machine} from '../types';
 import {
   CREATE_MACHINE_CATEGORY,
   DELETE_MACHINE_CATEGORY,
   UPDATE_MACHINE_CATEGORY_NAME,
-  // VALIDATE_MACHINE_CATEGORY_NAME,
+  VALIDATE_MACHINE_CATEGORY_NAME,
   CREATE_MACHINE_ATTRIBUTE,
   DELETE_MACHINE_ATTRIBUTE,
   UPDATE_MACHINE_ATTRIBUTE_NAME,
-  // VALIDATE_MACHINE_ATTRIBUTE_NAME,
+  VALIDATE_MACHINE_ATTRIBUTE_NAME,
   UPDATE_MACHINE_ATTRIBUTE_VALUE_OPTION,
   UPDATE_MACHINE_TITLE_ATTRIBUTE,
   CREATE_MACHINE,
@@ -16,7 +16,7 @@ import {
   UPDATE_MACHINE_ATTRIBUTE_VALUE,
   CLEAR_CATEGORY_ERROR,
 } from './actions/actionTypes';
-import actions, {Action, Actions} from './actions';
+import {Action} from './actions';
 import produce from 'immer';
 import {
   createMachineCategoryObj,
@@ -29,18 +29,6 @@ import {
   shouldChangeAttributeOption,
 } from './utils';
 import {errors} from '../constants';
-import {CreateMachine} from './actions/createMachine';
-import {CreateMachineAttribute} from './actions/createMachineAttribute';
-import {CreateMachineCategory} from './actions/createMachineCategory';
-import {DeleteMachine} from './actions/deleteMachine';
-import {DeleteMachineAttribute} from './actions/deleteMachineAttribute';
-import {DeleteMachineCategory} from './actions/deleteMachineCategory';
-import {UpdateAttributeValue} from './actions/updateAttributeValue';
-import {UpdateAttributeValueOption} from './actions/updateAttributeValueOption';
-import {UpdateAttributeName} from './actions/updateAttributeName';
-import {UpdateMachineCategoryName} from './actions/updateMachineCategoryName';
-import {UpdateMachineTitleAttribute} from './actions/updateMachineTitleAttribute';
-import {ClearCategoryError} from './actions/clearCategoryError';
 
 export interface MachinesState {
   machineCategories: MachineCategory[];
@@ -48,26 +36,15 @@ export interface MachinesState {
     [key: string]: Machine[];
   };
 }
-export interface Methods {
-  createMachine: CreateMachine;
-  createMachineAttribute: CreateMachineAttribute;
-  createMachineCategory: CreateMachineCategory;
-  deleteMachine: DeleteMachine;
-  deleteMachineAttribute: DeleteMachineAttribute;
-  deleteMachineCategory: DeleteMachineCategory;
-  updateAttributeValue: UpdateAttributeValue;
-  updateAttributeValueOption: UpdateAttributeValueOption;
-  updateAttributeName: UpdateAttributeName;
-  updateMachineCategoryName: UpdateMachineCategoryName;
-  updateMachineTitleAttribute: UpdateMachineTitleAttribute;
-  clearCategoryError: ClearCategoryError;
-}
-export interface Context extends Methods {
+export interface Context {
   state: MachinesState;
+  dispatch: Dispatch<Action>;
 }
 
 const initialState: MachinesState = {
-  machineCategories: [],
+  machineCategories: [
+    ...new Array(30).fill(undefined).map(() => createMachineCategoryObj()[0]),
+  ],
   machines: {},
 };
 
@@ -92,20 +69,26 @@ const reducer = (state: MachinesState, action: Action) => {
       return produce(state, draft => {
         draft.machineCategories.forEach(machineCategory => {
           if (machineCategory.id === action.payload.machineCategoryId) {
+            machineCategory.name = action.payload.name;
+          }
+        });
+      });
+    case VALIDATE_MACHINE_CATEGORY_NAME:
+      return produce(state, draft => {
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.machineCategoryId) {
             const nameUnique = isNameUnique(
-              action.payload.name,
-              draft.machineCategories
-                .filter(
-                  category => category.id !== action.payload.machineCategoryId,
-                )
-                .map(({name}) => name),
+              machineCategory.id,
+              machineCategory.name,
+              draft.machineCategories,
             );
 
             if (nameUnique) {
               machineCategory.nameUnique = true;
-              machineCategory.name = action.payload.name;
+              machineCategory.lastUniqueName = machineCategory.name;
             } else {
               machineCategory.nameUnique = false;
+              machineCategory.name = machineCategory.lastUniqueName;
             }
           }
         });
@@ -126,16 +109,14 @@ const reducer = (state: MachinesState, action: Action) => {
 
         draft.machineCategories.forEach(machineCategory => {
           if (machineCategory.id === action.payload.machineCategoryId) {
-            machineCategory.attributes.push(newAttribute);
-
-            if (machineCategory.titleAttributeId.length === 0) {
-              machineCategory.titleAttributeId = newAttribute.id;
-            }
+            machineCategory.attributes[newAttribute.id] = newAttribute;
           }
         });
 
         draft.machines[action.payload.machineCategoryId].forEach(machine => {
-          machine.attributes.push(createMachineAttributeObj(newAttribute));
+          const newMachineAttribute = createMachineAttributeObj(newAttribute);
+
+          machine.attributes[newMachineAttribute.id] = newMachineAttribute;
         });
       });
     case DELETE_MACHINE_ATTRIBUTE:
@@ -148,32 +129,37 @@ const reducer = (state: MachinesState, action: Action) => {
                 action.payload.categoryAttributeId,
               )
             ) {
-              machineCategory.attributes = machineCategory.attributes.filter(
-                categoryAttr =>
-                  categoryAttr.id !== action.payload.categoryAttributeId,
-              );
+              delete machineCategory.attributes[
+                action.payload.categoryAttributeId
+              ];
 
               if (
                 machineCategory.titleAttributeId ===
                 action.payload.categoryAttributeId
               ) {
-                const textAttributes = machineCategory.attributes.filter(
+                const categoryAttributesArr = Object.values(
+                  machineCategory.attributes,
+                );
+                const textAttributes = categoryAttributesArr.filter(
                   attribute => attribute.valueOption === 'text',
                 );
 
-                machineCategory.titleAttributeId =
-                  machineCategory.attributes.length > 0
-                    ? textAttributes[0].id
-                    : '';
+                machineCategory.titleAttributeId = textAttributes[0].id;
               }
 
               // update child machines attributes
               draft.machines[action.payload.categoryId].forEach(machine => {
-                machine.attributes = machine.attributes.filter(
-                  machineAttr =>
-                    machineAttr.categoryAttributeId !==
-                    action.payload.categoryAttributeId,
-                );
+                const machineAttributes = machine.attributes;
+
+                for (let machineAttributeKey in machineAttributes) {
+                  if (
+                    machineAttributes[machineAttributeKey]
+                      .categoryAttributeId ===
+                    action.payload.categoryAttributeId
+                  ) {
+                    delete machineAttributes[machineAttributeKey];
+                  }
+                }
               });
             } else {
               machineCategory.error = errors.minAttributeCount;
@@ -185,25 +171,32 @@ const reducer = (state: MachinesState, action: Action) => {
       return produce(state, draft => {
         draft.machineCategories.forEach(machineCategory => {
           if (machineCategory.id === action.payload.categoryId) {
-            machineCategory.attributes.forEach(categoryAttr => {
-              if (categoryAttr.id === action.payload.categoryAttributeId) {
-                const nameUnique = isNameUnique(
-                  action.payload.newAttrName,
-                  machineCategory.attributes
-                    .filter(
-                      attr => attr.id !== action.payload.categoryAttributeId,
-                    )
-                    .map(({name}) => name),
-                );
+            machineCategory.attributes[
+              action.payload.categoryAttributeId
+            ].name = action.payload.newAttrName;
+          }
+        });
+      });
+    case VALIDATE_MACHINE_ATTRIBUTE_NAME:
+      return produce(state, draft => {
+        draft.machineCategories.forEach(machineCategory => {
+          if (machineCategory.id === action.payload.categoryId) {
+            const attribute =
+              machineCategory.attributes[action.payload.categoryAttributeId];
 
-                if (nameUnique) {
-                  categoryAttr.nameUnique = true;
-                  categoryAttr.name = action.payload.newAttrName;
-                } else {
-                  categoryAttr.nameUnique = false;
-                }
-              }
-            });
+            const nameUnique = isNameUnique(
+              attribute.id,
+              attribute.name,
+              Object.values(machineCategory.attributes),
+            );
+
+            if (nameUnique) {
+              attribute.nameUnique = true;
+              attribute.lastUniqueName = attribute.name;
+            } else {
+              attribute.nameUnique = false;
+              attribute.name = attribute.lastUniqueName;
+            }
           }
         });
       });
@@ -218,35 +211,38 @@ const reducer = (state: MachinesState, action: Action) => {
                 action.payload.valueOption,
               )
             ) {
-              machineCategory.attributes.forEach(categoryAttr => {
-                if (categoryAttr.id === action.payload.categoryAttributeId) {
-                  categoryAttr.valueOption = action.payload.valueOption;
-                }
-              });
+              machineCategory.attributes[
+                action.payload.categoryAttributeId
+              ].valueOption = action.payload.valueOption;
 
               if (
                 machineCategory.titleAttributeId ===
                   action.payload.categoryAttributeId &&
                 action.payload.valueOption !== 'text'
               ) {
-                const textAttributes = machineCategory.attributes.filter(
+                const attributesArr = Object.values(machineCategory.attributes);
+
+                const textAttributes = attributesArr.filter(
                   attribute => attribute.valueOption === 'text',
                 );
 
                 machineCategory.titleAttributeId = textAttributes[0].id;
               }
 
+              // Todo: change machines implementation
               draft.machines[action.payload.categoryId].forEach(machine => {
-                machine.attributes.forEach(machineAttr => {
+                const machineAttributes = machine.attributes;
+
+                for (let machineAttributeKey in machineAttributes) {
                   if (
-                    machineAttr.categoryAttributeId ===
+                    machineAttributes[machineAttributeKey]
+                      .categoryAttributeId ===
                     action.payload.categoryAttributeId
                   ) {
-                    machineAttr.value = getDefaultAttributeValue(
-                      action.payload.valueOption,
-                    );
+                    machineAttributes[machineAttributeKey].value =
+                      getDefaultAttributeValue(action.payload.valueOption);
                   }
-                });
+                }
               });
             } else {
               machineCategory.error = errors.minTextAttributeCount;
@@ -281,11 +277,8 @@ const reducer = (state: MachinesState, action: Action) => {
       return produce(state, draft => {
         draft.machines[action.payload.categoryId].forEach(machine => {
           if (machine.id === action.payload.machineId) {
-            machine.attributes.forEach(machineAttr => {
-              if (machineAttr.id === action.payload.machineAttributeId) {
-                machineAttr.value = action.payload.value;
-              }
-            });
+            machine.attributes[action.payload.machineAttributeId].value =
+              action.payload.value;
           }
         });
       });
@@ -294,24 +287,12 @@ const reducer = (state: MachinesState, action: Action) => {
   }
 };
 
-interface MethodsWithIndexing extends Methods {
-  [key: keyof typeof actions]: Actions;
-}
-let methods: Partial<MethodsWithIndexing> = {};
 function useMachines(): Context {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  useMemo(() => {
-    for (let key in actions) {
-      if (actions.hasOwnProperty(key)) {
-        (methods as MethodsWithIndexing)[key] = actions[key](dispatch);
-      }
-    }
-  }, []);
-
   return {
     state,
-    ...(methods as Methods),
+    dispatch,
   };
 }
 

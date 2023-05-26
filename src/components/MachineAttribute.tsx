@@ -1,16 +1,16 @@
-import {
-  MachineAttribute as MachineAttributeType,
-  AttributeValue,
-} from '../types';
+import {MachineAttribute as MachineAttributeType} from '../types';
 import {FC, memo} from 'react';
-import LabelledInput from './LabelledInput';
+import Input from './Input';
 import CheckboxAttribute from './CheckboxAttribute';
 import DateAttribute from './DateAttribute';
 import getAttributeName from '../utils/getAttributeName';
 
+type UpdateString = (value: string) => void;
+type UpdateBoolean = (value: boolean) => void;
+type UpdateNumber = (value: number) => void;
 interface Props {
   attribute: MachineAttributeType;
-  updateValue: (value: AttributeValue) => void;
+  updateValue: UpdateString | UpdateBoolean | UpdateNumber;
   attributeName: string;
 }
 
@@ -22,18 +22,18 @@ const MachineAttribute: FC<Props> = function ({
   switch (attribute.valueOption) {
     case 'text':
       return (
-        <LabelledInput
+        <Input
           label={getAttributeName(attributeName)}
-          initialValue={attribute.value}
-          updateValueOnBlur={updateValue}
+          value={attribute.value}
+          onValueUpdate={updateValue as UpdateString}
         />
       );
     case 'number':
       return (
-        <LabelledInput
+        <Input
           label={getAttributeName(attributeName)}
-          initialValue={attribute.value}
-          updateValueOnBlur={updateValue}
+          value={attribute.value}
+          onValueUpdate={updateValue as UpdateString}
         />
       );
     case 'checkbox':
@@ -41,7 +41,7 @@ const MachineAttribute: FC<Props> = function ({
         <CheckboxAttribute
           name={getAttributeName(attributeName)}
           value={attribute.value}
-          updateValue={updateValue}
+          updateValue={updateValue as UpdateBoolean}
         />
       );
     case 'date':
@@ -49,7 +49,7 @@ const MachineAttribute: FC<Props> = function ({
         <DateAttribute
           date={attribute.value}
           name={getAttributeName(attributeName)}
-          updateDate={updateValue}
+          updateDate={updateValue as UpdateNumber}
         />
       );
     default:

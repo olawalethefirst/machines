@@ -1,11 +1,14 @@
-import {attributeValueOptions} from './constants';
+import {attributeValueOptions, colors} from './constants';
 
 export interface MachineCategory {
   id: string;
   name: string;
+  lastUniqueName: string;
   nameUnique: boolean;
   titleAttributeId: string;
-  attributes: MachineCategoryAttribute[];
+  attributes: {
+    [key: string]: MachineCategoryAttribute;
+  };
   error: string;
 }
 
@@ -16,6 +19,7 @@ export type AttributeValue = string | number | boolean;
 export interface MachineCategoryAttribute {
   id: string;
   name: string;
+  lastUniqueName: string;
   nameUnique: boolean;
   valueOption: AttributeValueOptions;
 }
@@ -47,5 +51,7 @@ export type MachineAttribute = MachineAttributeBase &
 export interface Machine {
   id: string;
   categoryId: string;
-  attributes: MachineAttribute[];
+  attributes: {[key: string]: MachineAttribute};
 }
+
+export type Color = keyof typeof colors;

@@ -7,17 +7,15 @@ import {StyleSheet} from 'react-native';
 import color from '../utils/color';
 import {
   Machine as MachineType,
-  MachineAttribute as MachineAttributeType,
   AttributeValue,
   MachineCategory,
-  MachineCategoryAttribute,
 } from '../types';
-import {FC, useCallback, useMemo, memo} from 'react';
+import {FC, memo, useMemo} from 'react';
 import {Text, View} from 'react-native';
 import MachineAttribute from './MachineAttribute';
 import {UpdateAttributeValue} from '../context/actions/updateAttributeValue';
-import sanitizeString from '../utils/sanitizeString';
 import {DeleteMachine as DeleteMachineType} from '../context/actions/deleteMachine';
+import getAttributeName from '../utils/getAttributeName';
 
 interface Props {
   machine: MachineType;
@@ -35,25 +33,27 @@ const Machine: FC<Props> = function ({
   category,
 }) {
   const title = useMemo(() => {
-    return sanitizeString(
-      (
-        machine.attributes.find(
-          attribute =>
-            attribute.categoryAttributeId === category.titleAttributeId,
-        ) as MachineAttributeType
-      ).value as string,
-    );
+    const machineAttributes = machine.attributes;
+
+    for (let machineAttributeKey in machineAttributes) {
+      const machineAttribute = machineAttributes[machineAttributeKey];
+      if (machineAttribute.categoryAttributeId === category.titleAttributeId) {
+        return getAttributeName(machineAttribute.value.toString());
+      }
+    }
+
+    return '';
   }, [machine.attributes, category.titleAttributeId]);
 
-  const onUpdateAttributeValue = useCallback(
-    (attributeId: string, value: AttributeValue) => {
-      updateAttributeValue(attributeId, machine.id, value, categoryId);
-    },
-    [updateAttributeValue, machine.id, categoryId],
-  );
-  const onDeleteMachine = useCallback(() => {
+  const onUpdateAttributeValue = (
+    attributeId: string,
+    value: AttributeValue,
+  ) => {
+    updateAttributeValue(attributeId, machine.id, value, categoryId);
+  };
+  const onDeleteMachine = () => {
     deleteMachine(machine.id, categoryId);
-  }, [deleteMachine, machine.id, categoryId]);
+  };
 
   return (
     <ColCard>
@@ -66,7 +66,7 @@ const Machine: FC<Props> = function ({
 
         <Spacer value={12} />
 
-        {machine.attributes.map(attribute => (
+        {Object.values(machine.attributes).map(attribute => (
           <View key={attribute.id}>
             <Spacer value={12} />
             <Row style={[styles.multiItemRow, styles.alignItemsCenter]}>
@@ -76,12 +76,7 @@ const Machine: FC<Props> = function ({
                   onUpdateAttributeValue(attribute.id, value);
                 }}
                 attributeName={
-                  (
-                    category.attributes.find(
-                      categoryAttribute =>
-                        categoryAttribute.id === attribute.categoryAttributeId,
-                    ) as MachineCategoryAttribute
-                  ).name
+                  category.attributes[attribute.categoryAttributeId].name
                 }
               />
             </Row>

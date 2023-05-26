@@ -15,6 +15,7 @@ export const createMachineCategoryAttributeObj = (
   return {
     id: getUniqueId(),
     name: '',
+    lastUniqueName: '',
     nameUnique: true,
     valueOption,
   };
@@ -27,9 +28,12 @@ export const createMachineCategoryObj = (): [MachineCategory, string] => {
     {
       id,
       name: '',
+      lastUniqueName: '',
       nameUnique: true,
       titleAttributeId: attribute.id,
-      attributes: [attribute],
+      attributes: {
+        [attribute.id]: attribute,
+      },
       error: '',
     },
     id,
@@ -87,16 +91,29 @@ export const createMachineAttributeObj = (
 
 export const createMachineObj = (
   categoryId: string,
-  parentMachineAttributes: MachineCategoryAttribute[],
+  parentMachineAttributes: {[key: string]: MachineCategoryAttribute},
 ): Machine => {
+  const attributes: {[key: string]: MachineAttribute} = {};
+
+  for (let i in parentMachineAttributes) {
+    const machineAttribute = createMachineAttributeObj(
+      parentMachineAttributes[i],
+    );
+    attributes[machineAttribute.id] = machineAttribute;
+  }
+
   return {
     id: getUniqueId(),
     categoryId,
-    attributes: parentMachineAttributes.map(createMachineAttributeObj),
+    attributes,
   };
 };
 
-export const isNameUnique = (name: string, names: string[]) => {
+export const isNameUnique = (
+  id: string,
+  name: string,
+  collection: (MachineCategory | MachineCategoryAttribute)[],
+) => {
   let i = 0;
 
   const sanitizedName = sanitizeString(name);
@@ -105,10 +122,13 @@ export const isNameUnique = (name: string, names: string[]) => {
     return false;
   }
 
-  const sanitizedNames = names.map(_name => sanitizeString(_name));
+  while (i < collection.length) {
+    const currentItem = collection[i];
 
-  while (i < sanitizedNames.length) {
-    if (sanitizedNames[i] === sanitizedName) {
+    if (
+      sanitizeString(currentItem.name) === sanitizedName &&
+      currentItem.id !== id
+    ) {
       return false;
     }
 
@@ -119,14 +139,16 @@ export const isNameUnique = (name: string, names: string[]) => {
 };
 
 export const shouldDeleteCategoryAttribute = (
-  categoryAttributes: MachineCategoryAttribute[],
+  categoryAttributes: {[key: string]: MachineCategoryAttribute},
   attributeId: string,
 ) => {
-  if (categoryAttributes.length <= minAttributesCount) {
+  const attributesArr = Object.values(categoryAttributes);
+
+  if (attributesArr.length <= minAttributesCount) {
     return false;
   }
 
-  const remainingTextAttributes = categoryAttributes.filter(
+  const remainingTextAttributes = attributesArr.filter(
     attribute =>
       attribute.valueOption === 'text' && attribute.id !== attributeId,
   );
@@ -135,15 +157,17 @@ export const shouldDeleteCategoryAttribute = (
 };
 
 export const shouldChangeAttributeOption = (
-  categoryAttributes: MachineCategoryAttribute[],
+  categoryAttributes: {[key: string]: MachineCategoryAttribute},
   attributeId: string,
   attributeOption: AttributeValueOptions,
 ) => {
+  const attributesArr = Object.values(categoryAttributes);
+
   if (attributeOption === 'text') {
     return true;
   }
 
-  const remainingTextAttributes = categoryAttributes.filter(
+  const remainingTextAttributes = attributesArr.filter(
     attribute =>
       attribute.valueOption === 'text' && attribute.id !== attributeId,
   );

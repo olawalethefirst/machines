@@ -40,6 +40,14 @@ import clearCategoryError, {
   ClearCategoryError,
   ClearCategoryErrorA,
 } from './clearCategoryError';
+import validateMachineCategoryName, {
+  ValidateMachineCategoryName,
+  ValidateMachineCategoryNameA,
+} from './validateMachineCategoryName';
+import validateAttributeName, {
+  ValidateAttributeName,
+  ValidateAttributeNameA,
+} from './validateMachineAttributeName';
 
 export type Action =
   | CreateMachineAttributeA
@@ -53,7 +61,9 @@ export type Action =
   | UpdateMachineCategoryNameA
   | UpdateMachineTitleAttributeA
   | CreateMachineA
-  | ClearCategoryErrorA;
+  | ClearCategoryErrorA
+  | ValidateMachineCategoryNameA
+  | ValidateAttributeNameA;
 
 export type Actions =
   | CreateMachineAttribute
@@ -67,7 +77,9 @@ export type Actions =
   | UpdateMachineCategoryName
   | UpdateMachineTitleAttribute
   | CreateMachine
-  | ClearCategoryError;
+  | ClearCategoryError
+  | ValidateMachineCategoryName
+  | ValidateAttributeName;
 
 const actions = {
   createMachine,
@@ -82,6 +94,8 @@ const actions = {
   updateMachineCategoryName,
   updateMachineTitleAttribute,
   clearCategoryError,
+  validateMachineCategoryName,
+  validateAttributeName,
 };
 
 const actionsValue = Object.values(actions);

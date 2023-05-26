@@ -1,6 +1,6 @@
 import Screen from '../Screen';
 import {extractKey} from '../List';
-import {useContext, useCallback, memo, FC, useRef, useMemo} from 'react';
+import {useContext, useCallback, memo, FC, useMemo} from 'react';
 import MachineContext from '../../context/MachinesContext';
 import {Context} from '../../context/useMachines';
 import Machine from '../Machine';
@@ -10,12 +10,12 @@ import Column from '../layout/Column';
 import {Machine as MachineType} from '../../types';
 import Spacer from '../layout/Spacer';
 import Add from '../Add';
-import ModalDropdown from 'react-native-modal-dropdown';
 import {MachineCategory} from '../../types';
 import getCategoryName from '../../utils/getCategoryName';
 import Dropdown from '../Dropdown';
 import List from '../List';
 import ListEmpty from '../ListEmpty';
+import AddIcon from './AddIcon';
 
 const sortMachines = (
   machines: {[key: string]: MachineType[]},
@@ -30,19 +30,17 @@ const sortMachines = (
   const data = [];
 
   for (const i in machines) {
-    if (machines.hasOwnProperty(i)) {
-      data.push({
-        title: i,
-        data: [machines[i]],
-        renderItem: ({item}: {item: MachineType[]}) => (
-          <List
-            ListEmptyComponent={<ListEmpty listEmptyNote="No Machine" />}
-            data={item}
-            renderItem={renderListItem}
-          />
-        ),
-      });
-    }
+    data.push({
+      title: i,
+      data: [machines[i]],
+      renderItem: ({item}: {item: MachineType[]}) => (
+        <List
+          ListEmptyComponent={<ListEmpty listEmptyNote="No Machine" />}
+          data={item}
+          renderItem={renderListItem}
+        />
+      ),
+    });
   }
 
   return data;
@@ -53,33 +51,31 @@ const AddButton: FC<{
   categories: string[];
   onSelectCategory: (index: string) => void;
 }> = ({categories, onSelectCategory}) => {
-  const dropdownRef = useRef<ModalDropdown>(null);
-
-  const onPress = useCallback(() => {
-    if (categories.length > 1) {
-      dropdownRef.current?.show();
-    } else {
-      onSelectCategory('0');
-    }
-  }, [categories, onSelectCategory]);
-
   if (categories.length < 1) {
     return null;
   }
 
   if (categories.length < 2) {
-    return <Add onPress={onPress} />;
+    return (
+      <Add
+        onPress={() => {
+          onSelectCategory('0');
+        }}
+      />
+    );
   }
 
   return (
     <Dropdown
       containerStyle={styles.dropdownModal}
       dropdownStyle={styles.dropdown}
-      ref={dropdownRef}
       options={categories}
-      onSelectOption={onSelectCategory}>
-      <Add buttonStyle={styles.addButton} onPress={onPress} />
-    </Dropdown>
+      onSelectOption={onSelectCategory}
+      renderButtonProps={{
+        touchableProps: {style: styles.addButton},
+        renderChildren: AddIcon,
+      }}
+    />
   );
 };
 
@@ -189,9 +185,21 @@ const styles = StyleSheet.create({
   },
   dropdown: {borderWidth: 1, borderColor: color('lightPurple'), maxWidth: 200},
   addButton: {
-    position: 'relative',
-    bottom: 0,
-    left: 0,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: color('darkPurple'),
+    position: 'absolute',
+    bottom: 60,
+    // Todo: remove this if it works
+    // bottom: 0,
+    // left: 0,
+    // position: 'relative',
+    right: 40,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

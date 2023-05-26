@@ -1,13 +1,10 @@
 import ColCard from './ColCard';
 import Column from './layout/Column';
 import Row from './layout/Row';
-import LabelledInput from './LabelledInput';
+import Input from './Input';
 import Spacer from './layout/Spacer';
 import DeleteAttribute from './DeleteAttribute';
-import SelectAttributeOption from './SelectAttributeOption';
-import AddNewAttribute from './AddNewAttribute';
 import DeleteMachine from './DeleteMachine';
-import SelectTitle from './SelectTitle';
 import {StyleSheet} from 'react-native';
 import color from '../utils/color';
 import {
@@ -15,155 +12,78 @@ import {
   AttributeValueOptions,
   MachineCategoryAttribute,
 } from '../types';
-import {
-  FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  memo,
-  useState,
-  useRef,
-} from 'react';
+import {FC, useEffect, useMemo, memo, Dispatch} from 'react';
 import {Text, View} from 'react-native';
-import {UpdateAttributeName} from '../context/actions/updateAttributeName';
-import {UpdateAttributeValueOption} from '../context/actions/updateAttributeValueOption';
-import {CreateMachineAttribute} from '../context/actions/createMachineAttribute';
-import {DeleteMachineCategory} from '../context/actions/deleteMachineCategory';
-import {DeleteMachineAttribute} from '../context/actions/deleteMachineAttribute';
-import {ClearCategoryError} from '../context/actions/clearCategoryError';
-import {errors} from '../constants';
-import {UpdateMachineCategoryName} from '../context/actions/updateMachineCategoryName';
-import {UpdateMachineTitleAttribute} from '../context/actions/updateMachineTitleAttribute';
+import updateAttributeName from '../context/actions/updateAttributeName';
+import updateAttributeValueOption from '../context/actions/updateAttributeValueOption';
+import createMachineAttribute from '../context/actions/createMachineAttribute';
+import deleteMachineCategory from '../context/actions/deleteMachineCategory';
+import deleteMachineAttribute from '../context/actions/deleteMachineAttribute';
+import clearCategoryError from '../context/actions/clearCategoryError';
+import {errors, attributeValueOptions} from '../constants';
+import updateMachineCategoryName from '../context/actions/updateMachineCategoryName';
+import updateMachineTitleAttribute from '../context/actions/updateMachineTitleAttribute';
 import getCategoryName from '../utils/getCategoryName';
-import getUniqueId from '../utils/getUniqueId';
+import Dropdown from './Dropdown';
+import {buttonStyles} from './Button';
+import validateMachineCategoryName from '../context/actions/validateMachineCategoryName';
+import validateAttributeName from '../context/actions/validateMachineAttributeName';
+import {Action} from '../context/actions';
 
 interface Props {
   item: MachineCategoryType;
-  deleteCategory: DeleteMachineCategory;
-  updateAttributeName: UpdateAttributeName;
-  createMachineAttribute: CreateMachineAttribute;
-  deleteMachineAttribute: DeleteMachineAttribute;
-  updateAttributeValueOption: UpdateAttributeValueOption;
-  clearCategoryError: ClearCategoryError;
-  updateMachineCategoryName: UpdateMachineCategoryName;
-  updateMachineTitleAttribute: UpdateMachineTitleAttribute;
+  dispatch: Dispatch<Action>;
 }
 
-const ValidatedLabelledInput: FC<{
-  label: string;
-  initialValue: string;
-  valueUnique: boolean;
-  updateValueOnBlur: (name: string) => void;
-}> = memo(({label, initialValue, valueUnique, updateValueOnBlur}) => {
-  const [resetValueKey, setResetValueKey] = useState(getUniqueId());
+const SelectAttributeIcon: React.FC<{
+  valueType?: AttributeValueOptions;
+}> = ({valueType}) => {
+  return <Text style={styles.dropdownText}>{valueType}</Text>;
+};
+const AddAttributeIcon: React.FC = () => (
+  <Text style={styles.addText}>add new field</Text>
+);
+const SelectTitleText: React.FC<{title?: string}> = ({title}) => (
+  <Text numberOfLines={1} style={styles.selectTitleText}>
+    {'Attribute title:     '}
+    <Text style={styles.selectTitleValueText}>{title}</Text>
+  </Text>
+);
 
-  const initialRender = useRef(true);
-
-  useEffect(() => {
-    !initialRender.current && !valueUnique && setResetValueKey(getUniqueId());
-
-    if (initialRender.current) {
-      initialRender.current = false;
-    }
-  }, [valueUnique]);
-
-  return (
-    <LabelledInput
-      initialValue={initialValue}
-      updateValueOnBlur={updateValueOnBlur}
-      label={label}
-      inputError={valueUnique ? '' : errors.uniqueName}
-      resetValueKey={resetValueKey}
-    />
-  );
-});
-
-const getAttributeName = (attribute: MachineCategoryAttribute) =>
+const unNamedAttributePrefix = 'Unnamed Attribute - ';
+const getAttributeTitle = (attribute: MachineCategoryAttribute) =>
   attribute.name.length > 0
     ? attribute.name
-    : 'Unnamed Attribute - ' + attribute.id;
+    : unNamedAttributePrefix + attribute.id;
 
-const parseTitleName = (
-  attributes: MachineCategoryAttribute[],
-  titleAttributeId: string,
-) => {
-  const titleAttribute = attributes.find(
-    attribute => attribute.id === titleAttributeId,
-  );
+const MachineCategory: FC<Props> = function ({item, dispatch}) {
+  const categoryName = getCategoryName(item);
+  const titleOptions = useMemo(() => {
+    const attributes = item.attributes;
+    const textAttributes = [];
+    for (let i in attributes) {
+      if (attributes[i].valueOption === 'text') {
+        textAttributes.push(attributes[i]);
+      }
+    }
 
-  return getAttributeName(titleAttribute as MachineCategoryAttribute);
-};
+    return textAttributes;
+  }, [item.attributes]);
+  const categoryTitle = useMemo(() => {
+    const titleAttribute = item.attributes[item.titleAttributeId];
 
-const MachineCategory: FC<Props> = function ({
-  item,
-  updateAttributeName,
-  updateAttributeValueOption,
-  createMachineAttribute,
-  deleteMachineAttribute,
-  deleteCategory,
-  clearCategoryError,
-  updateMachineCategoryName,
-  updateMachineTitleAttribute,
-}) {
-  const titleOptionsData = useMemo(
-    () => item.attributes.filter(attribute => attribute.valueOption === 'text'),
-    [item.attributes],
-  );
-  const categoryName = useMemo(() => getCategoryName(item), [item]);
-  const titleOptions = titleOptionsData.map(attribute =>
-    getAttributeName(attribute),
-  );
-
-  const updateName = useCallback(
-    (name: string) => {
-      updateMachineCategoryName(item.id, name);
-    },
-    [updateMachineCategoryName, item.id],
-  );
-  const onUpdateTitleAttribute = useCallback(
-    (i: string) => {
-      updateMachineTitleAttribute(
-        item.id,
-        titleOptionsData[parseInt(i, 10)].id,
-      );
-    },
-    [updateMachineTitleAttribute, item.id, titleOptionsData],
-  );
-  const _updateAttributeName = useCallback(
-    (attributeId: string, name: string) => {
-      updateAttributeName(attributeId, item.id, name);
-    },
-    [updateAttributeName, item.id],
-  );
-  const onUpdateAttributeOption = useCallback(
-    (attributeId: string, option: AttributeValueOptions) => {
-      updateAttributeValueOption(attributeId, item.id, option);
-    },
-    [updateAttributeValueOption, item.id],
-  );
-  const onCreateAttribute = useCallback(
-    (valueOption: AttributeValueOptions) => {
-      createMachineAttribute(item.id, valueOption);
-    },
-    [createMachineAttribute, item.id],
-  );
-  const onDeleteAttribute = useCallback(
-    (attributeId: string) => {
-      deleteMachineAttribute(attributeId, item.id);
-    },
-    [deleteMachineAttribute, item.id],
-  );
-  const onDeleteCategory = useCallback(() => {
-    deleteCategory(item.id);
-  }, [deleteCategory, item.id]);
+    return titleAttribute.name.length > 0
+      ? titleAttribute.name
+      : unNamedAttributePrefix + titleAttribute.id;
+  }, [item.attributes, item.titleAttributeId]);
 
   useEffect(() => {
     if (item.error.length > 0) {
       setTimeout(() => {
-        clearCategoryError(item.id);
+        clearCategoryError(dispatch)(item.id);
       }, 5000);
     }
-  }, [item.error, clearCategoryError, item.id]);
+  }, [item.error, dispatch, item.id]);
 
   return (
     <ColCard>
@@ -186,11 +106,14 @@ const MachineCategory: FC<Props> = function ({
 
         <View>
           <Row>
-            <ValidatedLabelledInput
-              initialValue={item.name}
-              updateValueOnBlur={updateName}
+            <Input
+              value={item.name}
+              onValueUpdate={value =>
+                updateMachineCategoryName(dispatch)(item.id, value)
+              }
               label={'Name'}
-              valueUnique={item.nameUnique}
+              inputError={!item.nameUnique}
+              onBlurInput={() => validateMachineCategoryName(dispatch)(item.id)}
             />
           </Row>
           {!item.nameUnique ? (
@@ -202,31 +125,47 @@ const MachineCategory: FC<Props> = function ({
 
         <Spacer value={12} />
 
-        {item.attributes.map((attribute, i) => (
-          <View key={i}>
+        {Object.values(item.attributes).map(attribute => (
+          <View key={attribute.id}>
             <Spacer value={12} />
 
             <Row style={[styles.multiItemRow, styles.alignItemsCenter]}>
-              <ValidatedLabelledInput
-                initialValue={attribute.name}
-                updateValueOnBlur={name => {
-                  _updateAttributeName(attribute.id, name);
+              <Input
+                value={attribute.name}
+                onValueUpdate={name => {
+                  updateAttributeName(dispatch)(attribute.id, item.id, name);
                 }}
                 label={'Attribute'}
-                valueUnique={attribute.nameUnique}
+                inputError={!attribute.nameUnique}
+                onBlurInput={() =>
+                  validateAttributeName(dispatch)(attribute.id, item.id)
+                }
               />
-              <SelectAttributeOption
-                valueType={attribute.valueOption}
-                onChangeValueType={(_, val: AttributeValueOptions) => {
-                  onUpdateAttributeOption(attribute.id, val);
+              <Dropdown
+                options={[...attributeValueOptions]}
+                onSelectOption={(_, val: string) => {
+                  updateAttributeValueOption(dispatch)(
+                    attribute.id,
+                    item.id,
+                    val as AttributeValueOptions,
+                  );
+                }}
+                defaultOption={attribute.valueOption}
+                renderButtonProps={{
+                  touchableProps: {
+                    style: [styles.dropdownButton, buttonStyles.button],
+                  },
+                  renderChildren: SelectAttributeIcon,
+                  childrenProps: {valueType: attribute.valueOption},
                 }}
               />
               <DeleteAttribute
                 onPress={() => {
-                  onDeleteAttribute(attribute.id);
+                  deleteMachineAttribute(dispatch)(attribute.id, item.id);
                 }}
               />
             </Row>
+
             {!attribute.nameUnique ? (
               <Text style={[styles.error, styles.showError]}>
                 {errors.uniqueName}
@@ -238,18 +177,49 @@ const MachineCategory: FC<Props> = function ({
         <Spacer value={12} />
 
         <Row>
-          <SelectTitle
-            options={titleOptions}
-            title={parseTitleName(item.attributes, item.titleAttributeId)}
-            onChangeTitle={onUpdateTitleAttribute}
+          <Dropdown
+            containerStyle={styles.selectTitleDropdownContainer}
+            dropdownStyle={styles.selectTitleDropdown}
+            options={titleOptions.map(option => getAttributeTitle(option))}
+            onSelectOption={index =>
+              updateMachineTitleAttribute(dispatch)(
+                item.id,
+                titleOptions[parseInt(index, 10)].id,
+              )
+            }
+            defaultOption={getAttributeTitle(
+              item.attributes[item.titleAttributeId],
+            )}
+            renderButtonProps={{
+              touchableProps: {
+                style: [buttonStyles.button, styles.selectTitleButton],
+              },
+              renderChildren: SelectTitleText,
+              childrenProps: {title: categoryTitle},
+            }}
           />
         </Row>
 
         <Spacer value={12} />
 
         <Row style={[styles.multiItemRow, styles.alignItemsCenter]}>
-          <AddNewAttribute addNewAttribute={onCreateAttribute} />
-          <DeleteMachine onPress={onDeleteCategory} />
+          <Dropdown
+            onSelectOption={(i, value) =>
+              createMachineAttribute(dispatch)(
+                item.id,
+                value as AttributeValueOptions,
+              )
+            }
+            renderButtonProps={{
+              touchableProps: {style: [buttonStyles.button, styles.addButton]},
+              renderChildren: AddAttributeIcon,
+            }}
+            options={[...attributeValueOptions]}
+            defaultOption={attributeValueOptions[0]}
+          />
+          <DeleteMachine
+            onPress={() => deleteMachineCategory(dispatch)(item.id)}
+          />
         </Row>
       </Column>
     </ColCard>
@@ -276,6 +246,47 @@ const styles = StyleSheet.create({
   },
   showError: {
     opacity: 1,
+  },
+  dropdownButton: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: color('lightPurple'),
+  },
+  dropdownText: {
+    fontSize: 14,
+    textTransform: 'uppercase',
+    fontWeight: '500',
+    color: color('darkPurple'),
+  },
+  addButton: {
+    borderWidth: 1,
+    borderColor: color('lightPurple'),
+  },
+  addText: {
+    fontSize: 14,
+    textTransform: 'uppercase',
+    fontWeight: '500',
+    color: color('darkPurple'),
+  },
+  selectTitleButton: {
+    borderWidth: 1,
+    borderColor: color('darkGrey'),
+    backgroundColor: color('lightGrey'),
+    alignItems: 'stretch',
+  },
+  selectTitleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: color('darkGrey'),
+    textTransform: 'capitalize',
+  },
+  selectTitleValueText: {
+    color: color('black'),
+  },
+  selectTitleDropdownContainer: {
+    flexGrow: 1,
+  },
+  selectTitleDropdown: {
+    minWidth: 300,
   },
 });
 

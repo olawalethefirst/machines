@@ -1,26 +1,28 @@
 import {StyleProp, TouchableOpacity, ViewStyle, StyleSheet} from 'react-native';
-import {FC, ReactNode} from 'react';
+import {forwardRef, PropsWithChildren} from 'react';
 
 interface ButtonProps {
   style?: StyleProp<ViewStyle>;
-  children: ReactNode;
-  onPress: (...args: any[]) => void;
+  onPress?: (...args: any[]) => void;
 }
 
-const Button: FC<ButtonProps> = function ({children, style, onPress}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.6}
-      onPress={onPress}
-      style={[styles.button, style]}>
-      {children}
-    </TouchableOpacity>
-  );
-};
+const Button = forwardRef<TouchableOpacity, PropsWithChildren<ButtonProps>>(
+  function ({children, style, onPress}, ref) {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.6}
+        onPress={onPress}
+        style={[buttonStyles.button, style]}
+        ref={ref}>
+        {children}
+      </TouchableOpacity>
+    );
+  },
+);
 
 export default Button;
 
-const styles = StyleSheet.create({
+export const buttonStyles = StyleSheet.create({
   button: {
     padding: 16,
     alignItems: 'center',

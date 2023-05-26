@@ -1,103 +1,131 @@
+import {FC, PropsWithChildren, memo, useRef} from 'react';
 import {
-  FC,
-  PropsWithChildren,
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react';
-import {StyleProp, StyleSheet, TextInput, ViewStyle} from 'react-native';
+  StyleProp,
+  StyleSheet,
+  TextInput,
+  View,
+  ViewStyle,
+  Text,
+  Animated,
+} from 'react-native';
 import color from '../utils/color';
 
 interface InputProps extends PropsWithChildren {
-  style?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<ViewStyle>;
   label: string;
-  initialValue: string;
-  inputError?: string;
+  value: string;
+  onValueUpdate: (value: string) => void;
+  inputError?: boolean;
   onFocusInput?: () => void;
-  onBlurInput?: (text: string) => void;
-  resetValueKey?: string;
+  onBlurInput?: () => void;
 }
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const Input: FC<InputProps> = function ({
   label,
-  style,
-  initialValue,
+  inputStyle,
+  value,
+  onValueUpdate,
   inputError,
   onFocusInput,
   onBlurInput,
-  resetValueKey,
 }) {
-  const [value, setValue] = useState(initialValue);
-  const [focussed, setFocussed] = useState(false);
+  const focussed = useRef(new Animated.Value(0)).current;
+  // const input = useRef(key);
+  // const [focussed, setFocussed] = useState(false);
 
-  const initialValueRef = useRef(initialValue);
-  const valueRef = useRef(initialValue);
-
-  initialValueRef.current = initialValue;
-  valueRef.current = value;
-
-  useEffect(() => {
-    resetValueKey &&
-      valueRef.current !== initialValueRef.current &&
-      setValue(initialValueRef.current);
-  }, [resetValueKey]);
-
-  const inputStyle = useMemo(
-    () => [
-      styles.input,
-      focussed
-        ? styles.focussedInput
-        : inputError && inputError?.length > 0
-        ? styles.inputError
-        : null,
-      style,
-    ],
-    [focussed, inputError, style],
-  );
-
-  const updateValue = (text: string) => {
-    setValue(text);
-  };
-  const onFocus = useCallback(() => {
-    onFocusInput && onFocusInput();
-    setFocussed(true);
-  }, [onFocusInput]);
-  const onBlur = () => {
-    onBlurInput && onBlurInput(value);
-    setFocussed(false);
-  };
+  // if (input.current !== key) {
+  //   setFocussed(false);
+  //   input.current = key;
+  // }
 
   return (
-    <TextInput
-      style={inputStyle}
-      placeholder={focussed ? '' : label}
-      value={value}
-      onChangeText={updateValue}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      placeholderTextColor={color('darkGrey')}
-    />
+    <View style={styles.container}>
+      <View>
+        {false || value ? (
+          <Text style={[styles.label, false ? styles.focussedLabel : null]}>
+            {label}
+          </Text>
+        ) : null}
+
+        <AnimatedTextInput
+          style={[
+            styles.input,
+            inputError ? styles.inputError : null,
+            {
+              borderColor: focussed.interpolate({
+                inputRange: [0, 1],
+                outputRange: [
+                  inputError ? color('red') : color('darkGrey'),
+                  color('lightPurple'),
+                ],
+              }),
+              //  borderColor: color('red'),
+              // borderColor: color('darkGrey')
+            },
+            false ? styles.focussedInput : null,
+            inputStyle,
+          ]}
+          placeholder={label}
+          value={value}
+          onChangeText={onValueUpdate}
+          onFocus={() => {
+            focussed.setValue(1);
+            onFocusInput && onFocusInput();
+          }}
+          onBlur={() => {
+            focussed.setValue(0);
+            onBlurInput && onBlurInput();
+          }}
+          placeholderTextColor={color('darkGrey')}
+        />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexGrow: 1,
+    paddingVertical: 8,
+  },
+  label: {
+    position: 'absolute',
+    zIndex: 1,
+    top: -7,
+    left: 4,
+    height: 14,
+    maxWidth: '90%',
+    overflow: 'hidden',
+
+    backgroundColor: 'white',
+    paddingHorizontal: 2,
+
+    fontSize: 14,
+    lineHeight: 14,
+    color: color('darkGrey'),
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  focussedLabel: {color: color('lightPurple')},
+
   input: {
     alignSelf: 'stretch',
     borderWidth: 1,
-    borderColor: color('darkGrey'),
+    // borderColor: color('darkGrey'),
     backgroundColor: color('lightGrey'),
     padding: 16,
     fontSize: 14,
     fontWeight: '600',
   },
   focussedInput: {
-    borderColor: color('lightPurple'),
+    // borderColor: color('lightPurple'),
   },
   inputError: {
-    borderColor: color('red'),
+    // borderColor: color('red'),
   },
 });
 
-export default Input;
+export default memo(Input);

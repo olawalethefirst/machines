@@ -8,6 +8,11 @@ import OpenDrawer from './OpenDrawer';
 const Drawer = createDrawerNavigator();
 
 function MachinesDrawer() {
+  // const context = useContext(MachineContext) as Context;
+  // const {
+  //   state: {machineCategories},
+  // } = context;
+
   return (
     <NavigationContainer>
       <Drawer.Navigator

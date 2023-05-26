@@ -8,46 +8,21 @@ import Add from '../Add';
 import {MachineCategory as MachineCategoryType} from '../../types';
 import ListEmpty from '../ListEmpty';
 
+import createMachineCategory from '../../context/actions/createMachineCategory';
+
 const MachineCategories = function () {
   const context = useContext(MachineContext) as Context;
 
   const {
     state: {machineCategories},
-    updateMachineCategoryName,
-    createMachineCategory,
-    updateAttributeName,
-    updateAttributeValueOption,
-    createMachineAttribute,
-    deleteMachineAttribute,
-    deleteMachineCategory,
-    clearCategoryError,
-    updateMachineTitleAttribute,
+    dispatch,
   } = context;
 
   const renderItem = useCallback(
     ({item}: {item: MachineCategoryType; index: number}) => (
-      <MachineCategory
-        updateAttributeName={updateAttributeName}
-        updateAttributeValueOption={updateAttributeValueOption}
-        createMachineAttribute={createMachineAttribute}
-        deleteMachineAttribute={deleteMachineAttribute}
-        clearCategoryError={clearCategoryError}
-        deleteCategory={deleteMachineCategory}
-        item={item}
-        updateMachineCategoryName={updateMachineCategoryName}
-        updateMachineTitleAttribute={updateMachineTitleAttribute}
-      />
+      <MachineCategory item={item} dispatch={dispatch} />
     ),
-    [
-      updateAttributeName,
-      updateAttributeValueOption,
-      createMachineAttribute,
-      deleteMachineAttribute,
-      clearCategoryError,
-      deleteMachineCategory,
-      updateMachineCategoryName,
-      updateMachineTitleAttribute,
-    ],
+    [dispatch],
   );
 
   return (
@@ -59,7 +34,7 @@ const MachineCategories = function () {
       />
       <Add
         onPress={() => {
-          createMachineCategory();
+          createMachineCategory(dispatch)();
         }}
       />
     </Screen>

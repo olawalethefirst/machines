@@ -1,28 +1,59 @@
-import {StyleProp, ViewStyle, StyleSheet} from 'react-native';
-import {FC, PropsWithChildren, forwardRef, Ref} from 'react';
+import {
+  StyleProp,
+  ViewStyle,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  Text,
+} from 'react-native';
+import {FC, PropsWithChildren, forwardRef, memo} from 'react';
 import color from '../utils/color';
 import ModalDropdown from 'react-native-modal-dropdown';
 
+interface ButtonComponentProps {
+  touchableProps: TouchableOpacityProps;
+  renderChildren: React.FC;
+  childrenProps?: {
+    [key: string]: any;
+  };
+}
 interface DropdownProps extends PropsWithChildren {
   containerStyle?: StyleProp<ViewStyle>;
   dropdownStyle?: StyleProp<ViewStyle>;
-  options: string[];
-  defaultOption?: string;
-  onSelectOption: (ind: string, val: string) => void;
-  ref: Ref<ModalDropdown>;
+  options: any[];
+  defaultOption?: any;
+  onSelectOption: (ind: string, val: any) => void;
+  renderButtonProps?: ButtonComponentProps;
+  renderRowText?: (rowItem: any) => string;
 }
 
-const Dropdown: FC<DropdownProps> = forwardRef(function (
-  {
-    defaultOption,
-    onSelectOption,
-    options,
-    children,
-    containerStyle,
-    dropdownStyle,
-  },
-  ref,
-) {
+const renderButtonComponent = forwardRef<
+  TouchableOpacity,
+  ButtonComponentProps
+>(function (props, ref) {
+  const {childrenProps, touchableProps, renderChildren, ...otherProps} = props;
+  const Child = renderChildren || Text;
+  return (
+    <TouchableOpacity
+      activeOpacity={0.6}
+      ref={ref}
+      {...touchableProps}
+      {...otherProps}>
+      <Child {...(childrenProps || {})} />
+    </TouchableOpacity>
+  );
+});
+
+const Dropdown: FC<DropdownProps> = function ({
+  defaultOption,
+  onSelectOption,
+  options,
+  children,
+  containerStyle,
+  dropdownStyle,
+  renderButtonProps,
+  renderRowText,
+}) {
   const dropdownStyles = [
     styles.dropdown,
     dropdownStyle,
@@ -35,7 +66,6 @@ const Dropdown: FC<DropdownProps> = forwardRef(function (
 
   return (
     <ModalDropdown
-      ref={ref}
       defaultValue={defaultOption}
       options={options}
       defaultIndex={options.findIndex(option => option === defaultOption)}
@@ -44,11 +74,15 @@ const Dropdown: FC<DropdownProps> = forwardRef(function (
       dropdownStyle={dropdownStyles}
       dropdownTextStyle={styles.dropdownText}
       dropdownTextHighlightStyle={styles.dropdownTextHighlight}
-      dropdownTextProps={{numberOfLines: 1}}>
+      dropdownTextProps={{numberOfLines: 1}}
+      // Todo: try to fix this
+      renderButtonComponent={renderButtonComponent as unknown as FC}
+      renderButtonProps={renderButtonProps}
+      renderRowText={renderRowText}>
       {children}
     </ModalDropdown>
   );
-});
+};
 
 const styles = StyleSheet.create({
   dropdown: {
@@ -74,4 +108,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Dropdown;
+export default memo(Dropdown);
