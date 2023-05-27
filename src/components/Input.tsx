@@ -5,7 +5,6 @@ import {
   TextInput,
   View,
   ViewStyle,
-  Text,
   Animated,
 } from 'react-native';
 import color from '../utils/color';
@@ -44,9 +43,23 @@ const Input: FC<InputProps> = function ({
     <View style={styles.container}>
       <View>
         {false || value ? (
-          <Text style={[styles.label, false ? styles.focussedLabel : null]}>
+          <Animated.Text
+            style={[
+              styles.label,
+              {
+                color: focussed.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [
+                    inputError ? color('red') : color('darkGrey'),
+                    color('lightPurple'),
+                  ],
+                }),
+                //  borderColor: color('red'),
+                // borderColor: color('darkGrey')
+              },
+            ]}>
             {label}
-          </Text>
+          </Animated.Text>
         ) : null}
 
         <AnimatedTextInput
@@ -61,8 +74,6 @@ const Input: FC<InputProps> = function ({
                   color('lightPurple'),
                 ],
               }),
-              //  borderColor: color('red'),
-              // borderColor: color('darkGrey')
             },
             false ? styles.focussedInput : null,
             inputStyle,
@@ -105,7 +116,6 @@ const styles = StyleSheet.create({
 
     fontSize: 14,
     lineHeight: 14,
-    color: color('darkGrey'),
     fontWeight: '600',
     textTransform: 'capitalize',
   },
@@ -114,17 +124,10 @@ const styles = StyleSheet.create({
   input: {
     alignSelf: 'stretch',
     borderWidth: 1,
-    // borderColor: color('darkGrey'),
     backgroundColor: color('lightGrey'),
     padding: 16,
     fontSize: 14,
     fontWeight: '600',
-  },
-  focussedInput: {
-    // borderColor: color('lightPurple'),
-  },
-  inputError: {
-    // borderColor: color('red'),
   },
 });
 
