@@ -42,9 +42,7 @@ export interface Context {
 }
 
 const initialState: MachinesState = {
-  machineCategories: [
-    ...new Array(30).fill(undefined).map(() => createMachineCategoryObj()[0]),
-  ],
+  machineCategories: [],
   machines: {},
 };
 
