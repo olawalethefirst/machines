@@ -8,20 +8,20 @@ import AddIcon from './screens/AddIcon';
 const Add: FC<{onPress?: () => void; style?: StyleProp<ViewStyle>}> =
   function ({onPress, style: buttonStyle}) {
     return (
-      <Button style={[styles.button, buttonStyle]} onPress={onPress}>
+      <Button style={[buttonStyle, addButtonStyles.button]} onPress={onPress}>
         <AddIcon />
       </Button>
     );
   };
 
-const styles = StyleSheet.create({
+export const addButtonStyles = StyleSheet.create({
   button: {
     paddingVertical: 12,
     paddingHorizontal: 12,
     backgroundColor: color('darkPurple'),
     position: 'absolute',
-    bottom: 60,
-    right: 40,
+    bottom: 20,
+    right: 30,
     width: 60,
     height: 60,
     borderRadius: 30,
