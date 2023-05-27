@@ -1,8 +1,8 @@
 import {MachineCategory} from '../types';
 
 const getCategoryName = (category: MachineCategory) => {
-  return category.name.length > 0
-    ? category.name
+  return category.lastUniqueName.length > 0
+    ? category.lastUniqueName
     : 'Unnamed Category - ' + category.id;
 };
 
