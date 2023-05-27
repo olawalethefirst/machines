@@ -135,7 +135,7 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
                 onValueUpdate={name => {
                   updateAttributeName(dispatch)(attribute.id, item.id, name);
                 }}
-                label={'Attribute'}
+                label={'Attribute Name'}
                 inputError={!attribute.nameUnique}
                 onBlurInput={() =>
                   validateAttributeName(dispatch)(attribute.id, item.id)
