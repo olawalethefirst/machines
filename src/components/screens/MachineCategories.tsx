@@ -1,6 +1,6 @@
 import Screen from '../Screen';
 import List from '../List';
-import {useContext, useCallback} from 'react';
+import {useContext, useCallback, useEffect} from 'react';
 import MachineContext from '../../context/MachinesContext';
 import {Context} from '../../context/useMachines';
 import MachineCategory from '../MachineCategory';
@@ -24,6 +24,13 @@ const MachineCategories = function () {
     ),
     [dispatch],
   );
+
+  useEffect(() => {
+    for (let i = 0; i < 5; i++) {
+      createMachineCategory(dispatch)();
+    }
+    console.log('done');
+  }, [dispatch]);
 
   return (
     <Screen>

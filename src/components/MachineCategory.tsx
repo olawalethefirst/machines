@@ -1,10 +1,3 @@
-import ColCard from './ColCard';
-import Column from './layout/Column';
-import Row from './layout/Row';
-import Input from './Input';
-import Spacer from './layout/Spacer';
-import DeleteAttribute from './DeleteAttribute';
-import DeleteMachine from './DeleteMachine';
 import {StyleSheet} from 'react-native';
 import color from '../utils/color';
 import {
@@ -13,7 +6,8 @@ import {
   MachineCategoryAttribute,
 } from '../types';
 import {FC, useEffect, useMemo, memo, Dispatch} from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
+import Row from './layout/Row';
 import updateAttributeName from '../context/actions/updateAttributeName';
 import updateAttributeValueOption from '../context/actions/updateAttributeValueOption';
 import createMachineAttribute from '../context/actions/createMachineAttribute';
@@ -25,30 +19,29 @@ import updateMachineCategoryName from '../context/actions/updateMachineCategoryN
 import updateMachineTitleAttribute from '../context/actions/updateMachineTitleAttribute';
 import getCategoryName from '../utils/getCategoryName';
 import Dropdown from './Dropdown';
-import {buttonStyles} from './Button';
 import validateMachineCategoryName from '../context/actions/validateMachineCategoryName';
 import validateAttributeName from '../context/actions/validateMachineAttributeName';
 import {Action} from '../context/actions';
+
+import {
+  Button,
+  ButtonProps,
+  Card,
+  Text,
+  TextInput,
+  HelperText,
+  IconButton,
+} from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+const AttributeValueOptionDropdown = memo(Dropdown<AttributeValueOptions>);
+const AttributeDropdown = memo(Dropdown<MachineCategoryAttribute>);
+const attributeOptions = [...attributeValueOptions];
 
 interface Props {
   item: MachineCategoryType;
   dispatch: Dispatch<Action>;
 }
-
-const SelectAttributeIcon: React.FC<{
-  valueType?: AttributeValueOptions;
-}> = ({valueType}) => {
-  return <Text style={styles.dropdownText}>{valueType}</Text>;
-};
-const AddAttributeIcon: React.FC = () => (
-  <Text style={styles.addText}>add new field</Text>
-);
-const SelectTitleText: React.FC<{title?: string}> = ({title}) => (
-  <Text numberOfLines={1} style={styles.selectTitleText}>
-    {'Attribute title:     '}
-    <Text style={styles.selectTitleValueText}>{title}</Text>
-  </Text>
-);
 
 const unNamedAttributePrefix = 'Unnamed Attribute - ';
 const getAttributeTitle = (attribute: MachineCategoryAttribute) =>
@@ -56,8 +49,40 @@ const getAttributeTitle = (attribute: MachineCategoryAttribute) =>
     ? attribute.name
     : unNamedAttributePrefix + attribute.id;
 
+// NEW IMPLEMENTATION
+const TextButton = ({onPress, icon, children, ...otherProps}: ButtonProps) => (
+  <Button
+    onPress={onPress}
+    labelStyle={styles.buttonText}
+    icon={icon}
+    {...otherProps}>
+    {children}
+  </Button>
+);
+const renderSelectOption: FC<{
+  onPress: () => void;
+  valueOption: AttributeValueOptions;
+}> = ({onPress, valueOption}) => (
+  <TextButton onPress={onPress}>{valueOption}</TextButton>
+);
+const DeleteIcon = () => (
+  <Icon name="delete" size={24} color={color('darkPurple')} />
+);
+const AttributeDropdownButton: FC<{onPress: () => void}> = ({onPress}) => (
+  <TextInput
+    label="Attribute Title:   "
+    value={''}
+    editable={false}
+    onPressIn={onPress}
+    mode="outlined"
+  />
+);
+const NewAttributeButton: FC<{onPress: () => void}> = ({onPress}) => (
+  <TextButton onPress={onPress}>new attribute</TextButton>
+);
+
+// COMPONENT
 const MachineCategory: FC<Props> = function ({item, dispatch}) {
-  const categoryName = getCategoryName(item);
   const titleOptions = useMemo(() => {
     const attributes = item.attributes;
     const textAttributes = [];
@@ -69,13 +94,6 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
 
     return textAttributes;
   }, [item.attributes]);
-  const categoryTitle = useMemo(() => {
-    const titleAttribute = item.attributes[item.titleAttributeId];
-
-    return titleAttribute.name.length > 0
-      ? titleAttribute.name
-      : unNamedAttributePrefix + titleAttribute.id;
-  }, [item.attributes, item.titleAttributeId]);
 
   useEffect(() => {
     if (item.error.length > 0) {
@@ -86,143 +104,102 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
   }, [item.error, dispatch, item.id]);
 
   return (
-    <ColCard>
-      <Column style={styles.container}>
-        <Row>
-          <Text style={styles.title}>{categoryName}</Text>
-        </Row>
+    <Card style={[styles.cardContainer]} mode="elevated">
+      <Text variant="titleMedium">{getCategoryName(item)}</Text>
 
-        <Row>
-          <Text
-            style={[
-              styles.error,
-              item.error.length > 0 ? styles.showError : null,
-            ]}>
-            {'* ' + item.error}
-          </Text>
-        </Row>
+      <HelperText type="error" visible={item.error.length > 0}>
+        {'* ' + item.error}
+      </HelperText>
 
-        <Spacer value={12} />
+      <TextInput
+        mode="outlined"
+        label="Name"
+        value={item.name}
+        onChangeText={value =>
+          updateMachineCategoryName(dispatch)(item.id, value)
+        }
+        error={!item.nameUnique}
+        onBlur={() => validateMachineCategoryName(dispatch)(item.id)}
+        // style={styles.rowMargin}
+      />
+      <HelperText type="error" visible={!item.nameUnique}>
+        {errors.uniqueName}
+      </HelperText>
 
-        <View>
-          <Row>
-            <Input
-              value={item.name}
-              onValueUpdate={value =>
-                updateMachineCategoryName(dispatch)(item.id, value)
+      {Object.values(item.attributes).map(attribute => (
+        <View key={attribute.id}>
+          <Row style={[styles.rowItems]}>
+            <TextInput
+              mode="outlined"
+              label={'Attribute Name'}
+              value={attribute.name}
+              onChangeText={name => {
+                updateAttributeName(dispatch)(attribute.id, item.id, name);
+              }}
+              error={!attribute.nameUnique}
+              onBlur={() =>
+                validateAttributeName(dispatch)(attribute.id, item.id)
               }
-              label={'Name'}
-              inputError={!item.nameUnique}
-              onBlurInput={() => validateMachineCategoryName(dispatch)(item.id)}
+              style={[styles.textInputInRow]}
+            />
+            <AttributeValueOptionDropdown
+              menuOptions={attributeOptions}
+              onSelectOption={option => {
+                updateAttributeValueOption(dispatch)(
+                  attribute.id,
+                  item.id,
+                  option,
+                );
+              }}
+              MenuButton={renderSelectOption}
+              menuButtonProps={{
+                valueOption: attribute.valueOption,
+              }}
+            />
+            <IconButton
+              onPress={() => {
+                deleteMachineAttribute(dispatch)(attribute.id, item.id);
+              }}
+              icon={DeleteIcon}
             />
           </Row>
-          {!item.nameUnique ? (
-            <Text style={[styles.error, styles.showError]}>
+
+          {
+            <HelperText
+              // style={{margin: 0, padding: 0}}
+              type="error"
+              visible={!attribute.nameUnique}>
               {errors.uniqueName}
-            </Text>
-          ) : null}
+            </HelperText>
+          }
         </View>
+      ))}
 
-        <Spacer value={12} />
+      <AttributeDropdown
+        menuOptions={titleOptions}
+        onSelectOption={option =>
+          updateMachineTitleAttribute(dispatch)(item.id, option.id)
+        }
+        MenuButton={AttributeDropdownButton}
+        renderOptionText={option => getAttributeTitle(option)}
+      />
 
-        {Object.values(item.attributes).map(attribute => (
-          <View key={attribute.id}>
-            <Spacer value={12} />
-
-            <Row style={[styles.multiItemRow, styles.alignItemsCenter]}>
-              <Input
-                value={attribute.name}
-                onValueUpdate={name => {
-                  updateAttributeName(dispatch)(attribute.id, item.id, name);
-                }}
-                label={'Attribute'}
-                inputError={!attribute.nameUnique}
-                onBlurInput={() =>
-                  validateAttributeName(dispatch)(attribute.id, item.id)
-                }
-              />
-              <Dropdown
-                options={[...attributeValueOptions]}
-                onSelectOption={(_, val: string) => {
-                  updateAttributeValueOption(dispatch)(
-                    attribute.id,
-                    item.id,
-                    val as AttributeValueOptions,
-                  );
-                }}
-                defaultOption={attribute.valueOption}
-                renderButtonProps={{
-                  touchableProps: {
-                    style: [styles.dropdownButton, buttonStyles.button],
-                  },
-                  renderChildren: SelectAttributeIcon,
-                  childrenProps: {valueType: attribute.valueOption},
-                }}
-              />
-              <DeleteAttribute
-                onPress={() => {
-                  deleteMachineAttribute(dispatch)(attribute.id, item.id);
-                }}
-              />
-            </Row>
-
-            {!attribute.nameUnique ? (
-              <Text style={[styles.error, styles.showError]}>
-                {errors.uniqueName}
-              </Text>
-            ) : null}
-          </View>
-        ))}
-
-        <Spacer value={12} />
-
-        <Row>
-          <Dropdown
-            containerStyle={styles.selectTitleDropdownContainer}
-            dropdownStyle={styles.selectTitleDropdown}
-            options={titleOptions.map(option => getAttributeTitle(option))}
-            onSelectOption={index =>
-              updateMachineTitleAttribute(dispatch)(
-                item.id,
-                titleOptions[parseInt(index, 10)].id,
-              )
-            }
-            defaultOption={getAttributeTitle(
-              item.attributes[item.titleAttributeId],
-            )}
-            renderButtonProps={{
-              touchableProps: {
-                style: [buttonStyles.button, styles.selectTitleButton],
-              },
-              renderChildren: SelectTitleText,
-              childrenProps: {title: categoryTitle},
-            }}
-          />
-        </Row>
-
-        <Spacer value={12} />
-
-        <Row style={[styles.multiItemRow, styles.alignItemsCenter]}>
-          <Dropdown
-            onSelectOption={(i, value) =>
-              createMachineAttribute(dispatch)(
-                item.id,
-                value as AttributeValueOptions,
-              )
-            }
-            renderButtonProps={{
-              touchableProps: {style: [buttonStyles.button, styles.addButton]},
-              renderChildren: AddAttributeIcon,
-            }}
-            options={[...attributeValueOptions]}
-            defaultOption={attributeValueOptions[0]}
-          />
-          <DeleteMachine
-            onPress={() => deleteMachineCategory(dispatch)(item.id)}
-          />
-        </Row>
-      </Column>
-    </ColCard>
+      <Row style={[styles.rowItems, styles.rowMargin]}>
+        <AttributeValueOptionDropdown
+          menuOptions={attributeOptions}
+          onSelectOption={option =>
+            createMachineAttribute(dispatch)(item.id, option)
+          }
+          MenuButton={NewAttributeButton}
+        />
+        {/* <IconButton /> */}
+        <TextButton
+          icon={DeleteIcon}
+          onPress={() => deleteMachineCategory(dispatch)(item.id)}>
+          "delete"
+        </TextButton>
+      </Row>
+    </Card>
   );
 };
 
@@ -287,6 +264,26 @@ const styles = StyleSheet.create({
   },
   selectTitleDropdown: {
     minWidth: 300,
+  },
+
+  cardContainer: {
+    padding: 12,
+    margin: 12,
+    marginBottom: 6,
+  },
+  rowMargin: {
+    marginTop: 20,
+  },
+  textInputInRow: {
+    flexGrow: 1,
+  },
+  rowItems: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  buttonText: {
+    textTransform: 'uppercase',
+    fontWeight: 'bold',
   },
 });
 
