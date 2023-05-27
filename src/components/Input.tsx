@@ -31,13 +31,6 @@ const Input: FC<InputProps> = function ({
   onBlurInput,
 }) {
   const focussed = useRef(new Animated.Value(0)).current;
-  // const input = useRef(key);
-  // const [focussed, setFocussed] = useState(false);
-
-  // if (input.current !== key) {
-  //   setFocussed(false);
-  //   input.current = key;
-  // }
 
   return (
     <View style={styles.container}>
@@ -54,8 +47,6 @@ const Input: FC<InputProps> = function ({
                     color('lightPurple'),
                   ],
                 }),
-                //  borderColor: color('red'),
-                // borderColor: color('darkGrey')
               },
             ]}>
             {label}
@@ -65,7 +56,6 @@ const Input: FC<InputProps> = function ({
         <AnimatedTextInput
           style={[
             styles.input,
-            inputError ? styles.inputError : null,
             {
               borderColor: focussed.interpolate({
                 inputRange: [0, 1],
@@ -75,7 +65,6 @@ const Input: FC<InputProps> = function ({
                 ],
               }),
             },
-            false ? styles.focussedInput : null,
             inputStyle,
           ]}
           placeholder={label}
