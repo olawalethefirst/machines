@@ -1,5 +1,4 @@
 import {StyleSheet} from 'react-native';
-import color from '../utils/color';
 import {
   MachineCategory as MachineCategoryType,
   AttributeValueOptions,
@@ -7,6 +6,16 @@ import {
 } from '../types';
 import {FC, useEffect, useMemo, memo, Dispatch} from 'react';
 import {View} from 'react-native';
+import {
+  Button,
+  ButtonProps,
+  Card,
+  Text,
+  TextInput,
+  HelperText,
+  IconButton,
+} from 'react-native-paper';
+
 import Row from './layout/Row';
 import updateAttributeName from '../context/actions/updateAttributeName';
 import updateAttributeValueOption from '../context/actions/updateAttributeValueOption';
@@ -22,17 +31,7 @@ import Dropdown from './Dropdown';
 import validateMachineCategoryName from '../context/actions/validateMachineCategoryName';
 import validateAttributeName from '../context/actions/validateMachineAttributeName';
 import {Action} from '../context/actions';
-
-import {
-  Button,
-  ButtonProps,
-  Card,
-  Text,
-  TextInput,
-  HelperText,
-  IconButton,
-} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import DeleteIcon from './DeleteIcon';
 
 const AttributeValueOptionDropdown = memo(Dropdown<AttributeValueOptions>);
 const AttributeDropdown = memo(Dropdown<MachineCategoryAttribute>);
@@ -65,17 +64,13 @@ const renderSelectOption: FC<{
 }> = ({onPress, valueOption}) => (
   <TextButton onPress={onPress}>{valueOption}</TextButton>
 );
-const DeleteIcon = () => (
-  <Icon name="delete" size={24} color={color('darkPurple')} />
-);
-const AttributeDropdownButton: FC<{onPress: () => void}> = ({onPress}) => (
-  <TextInput
-    label="Attribute Title:   "
-    value={''}
-    editable={false}
-    onPressIn={onPress}
-    mode="outlined"
-  />
+const AttributeDropdownButton: FC<{onPress: () => void; value: string}> = ({
+  onPress,
+  value,
+}) => (
+  <Button mode="outlined" onPress={onPress} labelStyle={[styles.buttonText]}>
+    Title: {' ' + value}
+  </Button>
 );
 const NewAttributeButton: FC<{onPress: () => void}> = ({onPress}) => (
   <TextButton onPress={onPress}>new attribute</TextButton>
@@ -105,7 +100,9 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
 
   return (
     <Card style={[styles.cardContainer]} mode="elevated">
-      <Text variant="titleMedium">{getCategoryName(item)}</Text>
+      <Text numberOfLines={1} variant="titleLarge">
+        {getCategoryName(item)}
+      </Text>
 
       <HelperText type="error" visible={item.error.length > 0}>
         {'* ' + item.error}
@@ -120,7 +117,6 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
         }
         error={!item.nameUnique}
         onBlur={() => validateMachineCategoryName(dispatch)(item.id)}
-        // style={styles.rowMargin}
       />
       <HelperText type="error" visible={!item.nameUnique}>
         {errors.uniqueName}
@@ -165,10 +161,7 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
           </Row>
 
           {
-            <HelperText
-              // style={{margin: 0, padding: 0}}
-              type="error"
-              visible={!attribute.nameUnique}>
+            <HelperText type="error" visible={!attribute.nameUnique}>
               {errors.uniqueName}
             </HelperText>
           }
@@ -181,6 +174,9 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
           updateMachineTitleAttribute(dispatch)(item.id, option.id)
         }
         MenuButton={AttributeDropdownButton}
+        menuButtonProps={{
+          value: getAttributeTitle(item.attributes[item.titleAttributeId]),
+        }}
         renderOptionText={option => getAttributeTitle(option)}
       />
 
@@ -192,11 +188,11 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
           }
           MenuButton={NewAttributeButton}
         />
-        {/* <IconButton /> */}
+
         <TextButton
           icon={DeleteIcon}
           onPress={() => deleteMachineCategory(dispatch)(item.id)}>
-          "delete"
+          delete
         </TextButton>
       </Row>
     </Card>
@@ -204,70 +200,9 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: color('white'),
-    padding: 20,
-  },
-  alignItemsCenter: {alignItems: 'center'},
-  multiItemRow: {gap: 10, flexWrap: 'nowrap'},
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: color('black'),
-  },
-  error: {
-    fontSize: 10,
-    color: color('red'),
-    opacity: 0,
-  },
-  showError: {
-    opacity: 1,
-  },
-  dropdownButton: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: color('lightPurple'),
-  },
-  dropdownText: {
-    fontSize: 14,
-    textTransform: 'uppercase',
-    fontWeight: '500',
-    color: color('darkPurple'),
-  },
-  addButton: {
-    borderWidth: 1,
-    borderColor: color('lightPurple'),
-  },
-  addText: {
-    fontSize: 14,
-    textTransform: 'uppercase',
-    fontWeight: '500',
-    color: color('darkPurple'),
-  },
-  selectTitleButton: {
-    borderWidth: 1,
-    borderColor: color('darkGrey'),
-    backgroundColor: color('lightGrey'),
-    alignItems: 'stretch',
-  },
-  selectTitleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: color('darkGrey'),
-    textTransform: 'capitalize',
-  },
-  selectTitleValueText: {
-    color: color('black'),
-  },
-  selectTitleDropdownContainer: {
-    flexGrow: 1,
-  },
-  selectTitleDropdown: {
-    minWidth: 300,
-  },
-
   cardContainer: {
-    padding: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 12,
     margin: 12,
     marginBottom: 6,
   },
@@ -275,15 +210,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   textInputInRow: {
-    flexGrow: 1,
+    flex: 1,
   },
   rowItems: {
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
+    flexWrap: 'nowrap',
+    overflow: 'hidden',
   },
   buttonText: {
     textTransform: 'uppercase',
     fontWeight: 'bold',
+  },
+  alignItemsStart: {
+    alignItems: 'flex-start',
   },
 });
 

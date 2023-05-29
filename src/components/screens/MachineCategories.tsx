@@ -43,6 +43,7 @@ const MachineCategories = function () {
         onPress={() => {
           createMachineCategory(dispatch)();
         }}
+        rightBottomPosition={true}
       />
     </Screen>
   );

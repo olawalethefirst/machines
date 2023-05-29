@@ -1,5 +1,5 @@
 import {FC, PropsWithChildren, useState} from 'react';
-import {Menu, Divider} from 'react-native-paper';
+import {Menu} from 'react-native-paper';
 
 interface DropdownProps<T> extends PropsWithChildren {
   menuOptions: T[];
@@ -39,8 +39,6 @@ const Dropdown = function <T>({
           }
         />
       ))}
-
-      {/* <Divider /> */}
     </Menu>
   );
 };
