@@ -65,6 +65,7 @@ const AddButton: FC<{
         onPress={() => {
           onSelectCategory(categories[0]);
         }}
+        rightBottomPosition
       />
     );
   }

@@ -122,6 +122,8 @@ const styles = StyleSheet.create({
   },
   transformScale1point5: {
     transform: [{scale: 1.5}],
+    marginRight: 10,
+    marginLeft: 10,
   },
 });
 
