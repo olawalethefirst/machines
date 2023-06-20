@@ -23,7 +23,7 @@ import createMachineAttribute from '../context/actions/createMachineAttribute';
 import deleteMachineCategory from '../context/actions/deleteMachineCategory';
 import deleteMachineAttribute from '../context/actions/deleteMachineAttribute';
 import clearCategoryError from '../context/actions/clearCategoryError';
-import {errors, attributeValueOptions} from '../constants';
+import {errors, attributeValueOptions, maxCardSize} from '../constants';
 import updateMachineCategoryName from '../context/actions/updateMachineCategoryName';
 import updateMachineTitleAttribute from '../context/actions/updateMachineTitleAttribute';
 import getCategoryName from '../utils/getCategoryName';
@@ -100,101 +100,103 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
 
   return (
     <Card style={[styles.cardContainer]} mode="elevated">
-      <Text numberOfLines={1} variant="titleLarge">
-        {getCategoryName(item)}
-      </Text>
+      <View style={styles.maxWidth}>
+        <Text numberOfLines={1} variant="titleLarge">
+          {getCategoryName(item)}
+        </Text>
 
-      <HelperText type="error" visible={item.error.length > 0}>
-        {'* ' + item.error}
-      </HelperText>
+        <HelperText type="error" visible={item.error.length > 0}>
+          {'* ' + item.error}
+        </HelperText>
 
-      <TextInput
-        mode="outlined"
-        label="Name"
-        value={item.name}
-        onChangeText={value =>
-          updateMachineCategoryName(dispatch)(item.id, value)
-        }
-        error={!item.nameUnique}
-        onBlur={() => validateMachineCategoryName(dispatch)(item.id)}
-      />
-      <HelperText type="error" visible={!item.nameUnique}>
-        {errors.uniqueName}
-      </HelperText>
-
-      {Object.values(item.attributes).map(attribute => (
-        <View key={attribute.id}>
-          <Row style={[styles.rowItems]}>
-            <TextInput
-              mode="outlined"
-              label={'Attribute Name'}
-              value={attribute.name}
-              onChangeText={name => {
-                updateAttributeName(dispatch)(attribute.id, item.id, name);
-              }}
-              error={!attribute.nameUnique}
-              onBlur={() =>
-                validateAttributeName(dispatch)(attribute.id, item.id)
-              }
-              style={[styles.textInputInRow]}
-            />
-            <AttributeValueOptionDropdown
-              menuOptions={attributeOptions}
-              onSelectOption={option => {
-                updateAttributeValueOption(dispatch)(
-                  attribute.id,
-                  item.id,
-                  option,
-                );
-              }}
-              MenuButton={renderSelectOption}
-              menuButtonProps={{
-                valueOption: attribute.valueOption,
-              }}
-            />
-            <IconButton
-              onPress={() => {
-                deleteMachineAttribute(dispatch)(attribute.id, item.id);
-              }}
-              icon={DeleteIcon}
-            />
-          </Row>
-
-          {
-            <HelperText type="error" visible={!attribute.nameUnique}>
-              {errors.uniqueName}
-            </HelperText>
+        <TextInput
+          mode="outlined"
+          label="Name"
+          value={item.name}
+          onChangeText={value =>
+            updateMachineCategoryName(dispatch)(item.id, value)
           }
-        </View>
-      ))}
+          error={!item.nameUnique}
+          onBlur={() => validateMachineCategoryName(dispatch)(item.id)}
+        />
+        <HelperText type="error" visible={!item.nameUnique}>
+          {errors.uniqueName}
+        </HelperText>
 
-      <AttributeDropdown
-        menuOptions={titleOptions}
-        onSelectOption={option =>
-          updateMachineTitleAttribute(dispatch)(item.id, option.id)
-        }
-        MenuButton={AttributeDropdownButton}
-        menuButtonProps={{
-          value: getAttributeTitle(item.attributes[item.titleAttributeId]),
-        }}
-        renderOptionText={option => getAttributeTitle(option)}
-      />
+        {Object.values(item.attributes).map(attribute => (
+          <View key={attribute.id}>
+            <Row style={[styles.rowItems]}>
+              <TextInput
+                mode="outlined"
+                label={'Attribute Name'}
+                value={attribute.name}
+                onChangeText={name => {
+                  updateAttributeName(dispatch)(attribute.id, item.id, name);
+                }}
+                error={!attribute.nameUnique}
+                onBlur={() =>
+                  validateAttributeName(dispatch)(attribute.id, item.id)
+                }
+                style={[styles.textInputInRow]}
+              />
+              <AttributeValueOptionDropdown
+                menuOptions={attributeOptions}
+                onSelectOption={option => {
+                  updateAttributeValueOption(dispatch)(
+                    attribute.id,
+                    item.id,
+                    option,
+                  );
+                }}
+                MenuButton={renderSelectOption}
+                menuButtonProps={{
+                  valueOption: attribute.valueOption,
+                }}
+              />
+              <IconButton
+                onPress={() => {
+                  deleteMachineAttribute(dispatch)(attribute.id, item.id);
+                }}
+                icon={DeleteIcon}
+              />
+            </Row>
 
-      <Row style={[styles.rowItems, styles.rowMargin]}>
-        <AttributeValueOptionDropdown
-          menuOptions={attributeOptions}
+            {
+              <HelperText type="error" visible={!attribute.nameUnique}>
+                {errors.uniqueName}
+              </HelperText>
+            }
+          </View>
+        ))}
+
+        <AttributeDropdown
+          menuOptions={titleOptions}
           onSelectOption={option =>
-            createMachineAttribute(dispatch)(item.id, option)
+            updateMachineTitleAttribute(dispatch)(item.id, option.id)
           }
-          MenuButton={NewAttributeButton}
+          MenuButton={AttributeDropdownButton}
+          menuButtonProps={{
+            value: getAttributeTitle(item.attributes[item.titleAttributeId]),
+          }}
+          renderOptionText={option => getAttributeTitle(option)}
         />
 
-        <TextButton
-          icon={DeleteIcon}
-          onPress={() => deleteMachineCategory(dispatch)(item.id)}>
-          delete
-        </TextButton>
-      </Row>
+        <Row style={[styles.rowItems, styles.rowMargin]}>
+          <AttributeValueOptionDropdown
+            menuOptions={attributeOptions}
+            onSelectOption={option =>
+              createMachineAttribute(dispatch)(item.id, option)
+            }
+            MenuButton={NewAttributeButton}
+          />
+
+          <TextButton
+            icon={DeleteIcon}
+            onPress={() => deleteMachineCategory(dispatch)(item.id)}>
+            delete
+          </TextButton>
+        </Row>
+      </View>
     </Card>
   );
 };
@@ -205,6 +207,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     margin: 12,
     marginBottom: 6,
+  },
+  maxWidth: {
+    maxWidth: maxCardSize,
   },
   rowMargin: {
     marginTop: 20,

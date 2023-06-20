@@ -22,7 +22,7 @@ const Add: FC<{onPress?: () => void; rightBottomPosition?: boolean}> =
         onPress={onPress}
         icon={AddIcon}
         containerColor={color('darkPurple')}
-        rippleColor={color('white')}
+        rippleColor={color('darkPurple', 0.3)}
       />
     );
   };

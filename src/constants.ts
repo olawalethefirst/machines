@@ -23,5 +23,5 @@ export const errors = {
   minTextAttributeCount: 'minimum of 1 text attribute required',
 };
 
-export const maxCardSize = 650;
+export const maxCardSize = 600;
 export const minAttributesCount = 1;
