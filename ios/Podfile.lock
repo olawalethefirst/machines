@@ -430,8 +430,6 @@ PODS:
     - React-perflogger (= 0.71.4)
   - RNCAsyncStorage (1.18.1):
     - React-Core
-  - RNFlashList (1.4.3):
-    - React-Core
   - RNGestureHandler (2.9.0):
     - React-Core
   - RNReanimated (3.0.2):
@@ -535,7 +533,6 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
-  - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -637,8 +634,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
-  RNFlashList:
-    :path: "../node_modules/@shopify/flash-list"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
@@ -702,7 +697,6 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 8fa50b38df6b992c76537993a2b0553d3b088004
   ReactCommon: b49a4b00ca6d181ff74b17c12b2d59ac4add0bde
   RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
-  RNFlashList: ade81b4e928ebd585dd492014d40fb8d0e848aab
   RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNReanimated: f0dd6b881808e635ef0673f89642937d6c141314
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
