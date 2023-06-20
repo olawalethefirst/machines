@@ -12,7 +12,7 @@ const CheckboxAttribute: FC<Props> = function ({value, name, updateValue}) {
   return (
     <View style={styles.container}>
       <Switch
-        trackColor={{false: color('lightGrey'), true: color('lightPurple')}}
+        trackColor={{false: color('darkGrey'), true: color('lightPurple')}}
         thumbColor={value ? color('lightGrey') : color('white')}
         onValueChange={updateValue}
         value={value}
