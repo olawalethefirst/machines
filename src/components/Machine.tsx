@@ -52,8 +52,8 @@ const Machine: FC<Props> = function ({
   };
 
   return (
-    <Card style={[styles.cardContainer]} mode="elevated">
-      <View style={styles.maxWidth}>
+    <View style={styles.maxWidth}>
+      <Card style={[styles.cardContainer]} mode="elevated">
         <Text variant="titleLarge">
           {title.length > 0 ? title : 'Unnamed Machine'}
         </Text>
@@ -80,8 +80,8 @@ const Machine: FC<Props> = function ({
           labelStyle={styles.buttonLabel}>
           delete
         </Button>
-      </View>
-    </Card>
+      </Card>
+    </View>
   );
 };
 

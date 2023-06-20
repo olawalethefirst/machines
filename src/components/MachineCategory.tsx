@@ -99,8 +99,8 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
   }, [item.error, dispatch, item.id]);
 
   return (
-    <Card style={[styles.cardContainer]} mode="elevated">
-      <View style={styles.maxWidth}>
+    <View style={styles.maxWidth}>
+      <Card style={[styles.cardContainer]} mode="elevated">
         <Text numberOfLines={1} variant="titleLarge">
           {getCategoryName(item)}
         </Text>
@@ -196,8 +196,8 @@ const MachineCategory: FC<Props> = function ({item, dispatch}) {
             delete
           </TextButton>
         </Row>
-      </View>
-    </Card>
+      </Card>
+    </View>
   );
 };
 
