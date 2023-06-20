@@ -11,6 +11,7 @@ import {UpdateAttributeValue} from '../context/actions/updateAttributeValue';
 import {DeleteMachine as DeleteMachineType} from '../context/actions/deleteMachine';
 import DeleteIcon from './DeleteIcon';
 import {Card, Text, Button} from 'react-native-paper';
+import {maxCardSize} from '../constants';
 
 interface Props {
   machine: MachineType;
@@ -52,31 +53,34 @@ const Machine: FC<Props> = function ({
 
   return (
     <Card style={[styles.cardContainer]} mode="elevated">
-      <Text variant="titleLarge">
-        {title.length > 0 ? title : 'Unnamed Machine'}
-      </Text>
+      <View style={styles.maxWidth}>
+        <Text variant="titleLarge">
+          {title.length > 0 ? title : 'Unnamed Machine'}
+        </Text>
 
-      {Object.values(machine.attributes).map(attribute => (
-        <View key={attribute.id} style={styles.rowMargin}>
-          <MachineAttribute
-            attribute={attribute}
-            updateValue={(value: AttributeValue) => {
-              onUpdateAttributeValue(attribute.id, value);
-            }}
-            attributeName={
-              category.attributes[attribute.categoryAttributeId].lastUniqueName
-            }
-          />
-        </View>
-      ))}
+        {Object.values(machine.attributes).map(attribute => (
+          <View key={attribute.id} style={styles.rowMargin}>
+            <MachineAttribute
+              attribute={attribute}
+              updateValue={(value: AttributeValue) => {
+                onUpdateAttributeValue(attribute.id, value);
+              }}
+              attributeName={
+                category.attributes[attribute.categoryAttributeId]
+                  .lastUniqueName
+              }
+            />
+          </View>
+        ))}
 
-      <Button
-        style={[styles.rowMargin, styles.alignItemStart]}
-        icon={DeleteIcon}
-        onPress={onDeleteMachine}
-        labelStyle={styles.buttonLabel}>
-        delete
-      </Button>
+        <Button
+          style={[styles.rowMargin, styles.alignItemStart]}
+          icon={DeleteIcon}
+          onPress={onDeleteMachine}
+          labelStyle={styles.buttonLabel}>
+          delete
+        </Button>
+      </View>
     </Card>
   );
 };
@@ -87,6 +91,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     margin: 12,
     marginBottom: 6,
+  },
+  maxWidth: {
+    maxWidth: maxCardSize,
   },
   rowMargin: {
     marginTop: 20,
