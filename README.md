@@ -13,7 +13,8 @@ Key Features:
 5. Native React Native Components Approach: a simpler outlook that leverages React Native's native components to maximise efficiency and performance on low end devices.
 
 ## Images
-![machines-1](https://github.com/olawalethefirst/machines/assets/66824020/8638a757-fd92-47c3-95f2-fae00afd5f2c)
-![machines-2](https://github.com/olawalethefirst/machines/assets/66824020/61cf16fa-9ded-49ef-9d97-d676d34ccbed)
-![machines-3](https://github.com/olawalethefirst/machines/assets/66824020/99e2f0e5-6e93-4aea-a759-e628f37e2160)
-![machines-4](https://github.com/olawalethefirst/machines/assets/66824020/ccb418e9-3b63-43bf-8a11-b2cc24b062d7)
+![machines-4](https://github.com/olawalethefirst/machines/assets/66824020/f0772cbe-add2-41cd-b8db-a6d75fab223b)
+![machines-3](https://github.com/olawalethefirst/machines/assets/66824020/6a7f202f-217b-49c7-bfef-e6f4f0a9a5d1)
+![machines-2](https://github.com/olawalethefirst/machines/assets/66824020/5267bd22-089c-49f0-a7b2-835425f9a6b4)
+![machines-1](https://github.com/olawalethefirst/machines/assets/66824020/24727116-3b19-4e0c-98bc-a6d8a2b335c9)
+
